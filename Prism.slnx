@@ -1,1 +1,8 @@
-<Solution />
+<Solution>
+  <Project Path="prism.web.service.Tests/prism.web.service.Tests.csproj" Id="b3679778-a955-441c-bf61-40925a0f9bd9" DisplayName="prism.web.service.tests" />
+  <Project Path="prism.web.service/prism.web.service.csproj" Id="4fc6af11-1455-4ab5-9865-a8c6d7a6823a" />
+  <Project Path="Prism.Web.UI/prism.web.ui.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>
