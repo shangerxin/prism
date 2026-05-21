@@ -1,5 +1,21 @@
 <Solution>
-  <Project Path="prism.web.service.Tests/prism.web.service.Tests.csproj" Id="b3679778-a955-441c-bf61-40925a0f9bd9" DisplayName="prism.web.service.tests" />
+  <Folder Name="/Clients/">
+    <Project Path="prism.client/prism.client.python/prism.client.python.pyproj" Type="888888a0-9f3d-457c-b088-3a5042f75d52" Id="9ab46758-5e96-4874-86e5-35c434390d75">
+      <Build Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/Models/">
+    <File Path="prism.models/mongodb.xmind" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE.txt" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="prism.web.service.grpc/prism.web.service.grpc.csproj" Id="59c57191-1fcf-4b27-933c-6a2e3bd5b0e3" />
+  <Project Path="prism.web.service.Tests/prism.web.service.Tests.csproj" Id="b3679778-a955-441c-bf61-40925a0f9bd9" />
   <Project Path="prism.web.service/prism.web.service.csproj" Id="4fc6af11-1455-4ab5-9865-a8c6d7a6823a" />
   <Project Path="Prism.Web.UI/prism.web.ui.esproj">
     <Build />
