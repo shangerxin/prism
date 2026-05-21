@@ -1,3 +1,4 @@
 [submodule "prism.client"]
 	path = prism.client
 	url = https://github.com/shangerxin/prism.client.git
+	ignore = dirty

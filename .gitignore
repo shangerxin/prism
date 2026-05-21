@@ -10,6 +10,9 @@
 *.userosscache
 *.sln.docstates
 
+# Submodules
+prism.client/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
