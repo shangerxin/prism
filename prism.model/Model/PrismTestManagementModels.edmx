@@ -1,0 +1,1858 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="TestManagementDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="DeviceUnderTest">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
+          <Property Name="description" Type="nvarchar" MaxLength="256" />
+          <Property Name="machineId" Type="int" Nullable="false" />
+          <Property Name="productId" Type="int" />
+        </EntityType>
+        <EntityType Name="GraphicTemplate">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="queryTemplate" Type="text" />
+          <Property Name="type" Type="nchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="Operation">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="32" Nullable="false" />
+          <Property Name="description" Type="nchar" MaxLength="256" />
+        </EntityType>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
+          <Property Name="description" Type="nvarchar" MaxLength="256" />
+        </EntityType>
+        <EntityType Name="Project">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
+          <Property Name="description" Type="nchar" MaxLength="256" />
+          <Property Name="productId" Type="int" />
+        </EntityType>
+        <EntityType Name="Release">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="version" Type="nchar" MaxLength="30" Nullable="false" />
+          <Property Name="productId" Type="int" />
+        </EntityType>
+        <EntityType Name="ResultType">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Role">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="32" Nullable="false" />
+          <Property Name="description" Type="nchar" MaxLength="256" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="RoleOperationMap">
+          <Key>
+            <PropertyRef Name="roleId" />
+            <PropertyRef Name="operationId" />
+          </Key>
+          <Property Name="roleId" Type="int" Nullable="false" />
+          <Property Name="operationId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Script">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
+          <Property Name="uri" Type="nchar" MaxLength="256" />
+          <Property Name="scriptRepoId" Type="int" />
+          <Property Name="command" Type="nchar" MaxLength="1024" />
+        </EntityType>
+        <EntityType Name="ScriptRepository">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="10" />
+          <Property Name="url" Type="nchar" MaxLength="256" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
+        <EntityType Name="TestArtifact">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="256" />
+          <Property Name="url" Type="nvarchar" MaxLength="1024" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TestBuild">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" Nullable="false" />
+          <Property Name="testJobId" Type="int" Nullable="false" />
+          <Property Name="timestamp" Type="datetime2" Precision="7" Nullable="false" />
+          <Property Name="buildResultId" Type="int" Nullable="false" />
+          <Property Name="testResultId" Type="int" Nullable="false" />
+          <Property Name="guid" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="startTime" Type="datetime2" Precision="7" />
+          <Property Name="endTime" Type="datetime2" Precision="7" />
+          <Property Name="timeoutHours" Type="float" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TestCase">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="jobId" Type="int" />
+          <Property Name="scriptId" Type="int" />
+        </EntityType>
+        <EntityType Name="TestJob">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
+          <Property Name="url" Type="nvarchar" MaxLength="256" />
+          <Property Name="credentialId" Type="int" />
+          <Property Name="defaultTestMachineId" Type="int" />
+          <Property Name="projectId" Type="int" />
+        </EntityType>
+        <EntityType Name="TestJobParameters">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="testJobId" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="10" Nullable="false" />
+          <Property Name="value" Type="nchar" MaxLength="10" />
+          <Property Name="defaultValue" Type="nchar" MaxLength="10" />
+        </EntityType>
+        <EntityType Name="TestJobReportTemplate">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
+          <Property Name="template" Type="text" Nullable="false" />
+          <Property Name="testJobId" Type="int" />
+          <Property Name="emailTo" Type="nvarchar" MaxLength="1024" />
+          <Property Name="emailCc" Type="nvarchar" MaxLength="1024" />
+          <Property Name="emailBcc" Type="nvarchar" MaxLength="1024" />
+        </EntityType>
+        <EntityType Name="TestMachine">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
+          <Property Name="address" Type="nchar" MaxLength="256" />
+          <Property Name="credentialId" Type="int" />
+        </EntityType>
+        <EntityType Name="TestPlan">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="description" Type="nvarchar" MaxLength="256" />
+          <Property Name="productId" Type="int" />
+        </EntityType>
+        <EntityType Name="TestPlanRecipe">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="testPlanId" Type="int" Nullable="false" />
+          <Property Name="testSuitId" Type="int" />
+          <Property Name="testCaseId" Type="int" />
+          <Property Name="schedual" Type="nchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="TestReport">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="report" Type="text" />
+          <Property Name="buildId" Type="bigint" Nullable="false" />
+          <Property Name="testReportTemplateId" Type="int" />
+        </EntityType>
+        <EntityType Name="TestResult">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" Nullable="false" />
+          <Property Name="testBuildId" Type="bigint" Nullable="false" />
+          <Property Name="TestResultId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TestSuite">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="User">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="32" Nullable="false" />
+          <Property Name="token" Type="nchar" MaxLength="128" />
+          <Property Name="roleId" Type="int" />
+        </EntityType>
+        <EntityType Name="UserCredential">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="userName" Type="nchar" MaxLength="50" Nullable="false" />
+          <Property Name="password" Type="nvarchar" MaxLength="50" />
+          <Property Name="token" Type="nvarchar" MaxLength="256" />
+          <Property Name="description" Type="nvarchar" MaxLength="256" />
+          <Property Name="createdby" Type="nvarchar" MaxLength="50" />
+          <Property Name="scope" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="UserGroup">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="name" Type="nchar" MaxLength="32" />
+          <Property Name="description" Type="nchar" MaxLength="256" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'TestManagementDB.dbo.UserGroupMap' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="UserGroupMap">
+          <Key>
+            <PropertyRef Name="userId" />
+            <PropertyRef Name="groupId" />
+          </Key>
+          <Property Name="userId" Type="int" Nullable="false" />
+          <Property Name="groupId" Type="int" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'TestManagementDB.dbo.UserRoleMap' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="UserRoleMap">
+          <Key>
+            <PropertyRef Name="userId" />
+            <PropertyRef Name="roleId" />
+          </Key>
+          <Property Name="userId" Type="int" Nullable="false" />
+          <Property Name="roleId" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_Build_Job">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="1" />
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestBuild">
+              <PropertyRef Name="testJobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Build_ResultType1">
+          <End Role="ResultType" Type="Self.ResultType" Multiplicity="1" />
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ResultType">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestBuild">
+              <PropertyRef Name="buildResultId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DeviceUnderTest_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="0..1" />
+          <End Role="DeviceUnderTest" Type="Self.DeviceUnderTest" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="DeviceUnderTest">
+              <PropertyRef Name="productId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DeviceUnderTest_TestMachine">
+          <End Role="TestMachine" Type="Self.TestMachine" Multiplicity="1" />
+          <End Role="DeviceUnderTest" Type="Self.DeviceUnderTest" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestMachine">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="DeviceUnderTest">
+              <PropertyRef Name="machineId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Job_Credential">
+          <End Role="UserCredential" Type="Self.UserCredential" Multiplicity="0..1" />
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserCredential">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJob">
+              <PropertyRef Name="credentialId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Project_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="0..1" />
+          <End Role="Project" Type="Self.Project" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Project">
+              <PropertyRef Name="productId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Release_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="1" />
+          <End Role="Release" Type="Self.Release" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Release">
+              <PropertyRef Name="id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_RoleOperationMap_Operation">
+          <End Role="Operation" Type="Self.Operation" Multiplicity="1" />
+          <End Role="RoleOperationMap" Type="Self.RoleOperationMap" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Operation">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="RoleOperationMap">
+              <PropertyRef Name="operationId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_RoleOperationMap_Role">
+          <End Role="Role" Type="Self.Role" Multiplicity="1" />
+          <End Role="RoleOperationMap" Type="Self.RoleOperationMap" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Role">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="RoleOperationMap">
+              <PropertyRef Name="roleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Script_ScriptRepository">
+          <End Role="ScriptRepository" Type="Self.ScriptRepository" Multiplicity="0..1" />
+          <End Role="Script" Type="Self.Script" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ScriptRepository">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Script">
+              <PropertyRef Name="scriptRepoId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestBuild_ResultType">
+          <End Role="ResultType" Type="Self.ResultType" Multiplicity="1" />
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ResultType">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestBuild">
+              <PropertyRef Name="testResultId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestCase_Job">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="0..1" />
+          <End Role="TestCase" Type="Self.TestCase" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestCase">
+              <PropertyRef Name="jobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestCase_Script">
+          <End Role="Script" Type="Self.Script" Multiplicity="0..1" />
+          <End Role="TestCase" Type="Self.TestCase" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Script">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestCase">
+              <PropertyRef Name="scriptId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestJob_Project">
+          <End Role="Project" Type="Self.Project" Multiplicity="0..1" />
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Project">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJob">
+              <PropertyRef Name="projectId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestJobParameters_TestJob">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="1" />
+          <End Role="TestJobParameters" Type="Self.TestJobParameters" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJobParameters">
+              <PropertyRef Name="testJobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestJobReportTemplate_TestJob">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="0..1" />
+          <End Role="TestJobReportTemplate" Type="Self.TestJobReportTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJobReportTemplate">
+              <PropertyRef Name="testJobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestMachine_Credential">
+          <End Role="UserCredential" Type="Self.UserCredential" Multiplicity="0..1" />
+          <End Role="TestMachine" Type="Self.TestMachine" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserCredential">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestMachine">
+              <PropertyRef Name="credentialId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlan_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="0..1" />
+          <End Role="TestPlan" Type="Self.TestPlan" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlan">
+              <PropertyRef Name="productId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlanRecipe_TestCase">
+          <End Role="TestCase" Type="Self.TestCase" Multiplicity="0..1" />
+          <End Role="TestPlanRecipe" Type="Self.TestPlanRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestCase">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlanRecipe">
+              <PropertyRef Name="testCaseId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlanRecipe_TestPlan">
+          <End Role="TestPlan" Type="Self.TestPlan" Multiplicity="1" />
+          <End Role="TestPlanRecipe" Type="Self.TestPlanRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestPlan">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlanRecipe">
+              <PropertyRef Name="testPlanId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlanRecipe_TestSuite">
+          <End Role="TestSuite" Type="Self.TestSuite" Multiplicity="0..1" />
+          <End Role="TestPlanRecipe" Type="Self.TestPlanRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestSuite">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlanRecipe">
+              <PropertyRef Name="testSuitId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestReport_TestBuild">
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="1" />
+          <End Role="TestReport" Type="Self.TestReport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestBuild">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestReport">
+              <PropertyRef Name="buildId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestReport_TestJobReportTemplate">
+          <End Role="TestJobReportTemplate" Type="Self.TestJobReportTemplate" Multiplicity="0..1" />
+          <End Role="TestReport" Type="Self.TestReport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJobReportTemplate">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestReport">
+              <PropertyRef Name="testReportTemplateId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestResult_Build">
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="1" />
+          <End Role="TestResult" Type="Self.TestResult" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestBuild">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestResult">
+              <PropertyRef Name="testBuildId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestResult_ResultType1">
+          <End Role="ResultType" Type="Self.ResultType" Multiplicity="1" />
+          <End Role="TestResult" Type="Self.TestResult" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ResultType">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestResult">
+              <PropertyRef Name="TestResultId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_User_Role">
+          <End Role="Role" Type="Self.Role" Multiplicity="0..1" />
+          <End Role="User" Type="Self.User" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Role">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="User">
+              <PropertyRef Name="roleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserGroupMap_User">
+          <End Role="User" Type="Self.User" Multiplicity="1" />
+          <End Role="UserGroupMap" Type="Self.UserGroupMap" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="UserGroupMap">
+              <PropertyRef Name="userId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserGroupMap_UserGroup">
+          <End Role="UserGroup" Type="Self.UserGroup" Multiplicity="1" />
+          <End Role="UserGroupMap" Type="Self.UserGroupMap" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserGroup">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="UserGroupMap">
+              <PropertyRef Name="groupId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserRoleMap_Role">
+          <End Role="Role" Type="Self.Role" Multiplicity="1" />
+          <End Role="UserRoleMap" Type="Self.UserRoleMap" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Role">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="UserRoleMap">
+              <PropertyRef Name="roleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserRoleMap_User">
+          <End Role="User" Type="Self.User" Multiplicity="1" />
+          <End Role="UserRoleMap" Type="Self.UserRoleMap" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="UserRoleMap">
+              <PropertyRef Name="userId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="TestManagementDBModelStoreContainer">
+          <EntitySet Name="DeviceUnderTest" EntityType="Self.DeviceUnderTest" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="GraphicTemplate" EntityType="Self.GraphicTemplate" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Operation" EntityType="Self.Operation" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Product" EntityType="Self.Product" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Project" EntityType="Self.Project" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Release" EntityType="Self.Release" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ResultType" EntityType="Self.ResultType" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Role" EntityType="Self.Role" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Script" EntityType="Self.Script" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ScriptRepository" EntityType="Self.ScriptRepository" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestArtifact" EntityType="Self.TestArtifact" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestBuild" EntityType="Self.TestBuild" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestCase" EntityType="Self.TestCase" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestJob" EntityType="Self.TestJob" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestJobParameters" EntityType="Self.TestJobParameters" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestJobReportTemplate" EntityType="Self.TestJobReportTemplate" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestMachine" EntityType="Self.TestMachine" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestPlan" EntityType="Self.TestPlan" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestPlanRecipe" EntityType="Self.TestPlanRecipe" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestReport" EntityType="Self.TestReport" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestResult" EntityType="Self.TestResult" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TestSuite" EntityType="Self.TestSuite" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="User" EntityType="Self.User" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UserCredential" EntityType="Self.UserCredential" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UserGroup" EntityType="Self.UserGroup" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="RoleOperationMap" EntityType="Self.RoleOperationMap" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [RoleOperationMap].[roleId] AS [roleId], 
+    [RoleOperationMap].[operationId] AS [operationId]
+    FROM [dbo].[RoleOperationMap] AS [RoleOperationMap]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="UserGroupMap" EntityType="Self.UserGroupMap" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [UserGroupMap].[userId] AS [userId], 
+    [UserGroupMap].[groupId] AS [groupId]
+    FROM [dbo].[UserGroupMap] AS [UserGroupMap]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="UserRoleMap" EntityType="Self.UserRoleMap" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [UserRoleMap].[userId] AS [userId], 
+    [UserRoleMap].[roleId] AS [roleId]
+    FROM [dbo].[UserRoleMap] AS [UserRoleMap]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_Build_Job" Association="Self.FK_Build_Job">
+            <End Role="TestJob" EntitySet="TestJob" />
+            <End Role="TestBuild" EntitySet="TestBuild" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Build_ResultType1" Association="Self.FK_Build_ResultType1">
+            <End Role="ResultType" EntitySet="ResultType" />
+            <End Role="TestBuild" EntitySet="TestBuild" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DeviceUnderTest_Product" Association="Self.FK_DeviceUnderTest_Product">
+            <End Role="Product" EntitySet="Product" />
+            <End Role="DeviceUnderTest" EntitySet="DeviceUnderTest" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DeviceUnderTest_TestMachine" Association="Self.FK_DeviceUnderTest_TestMachine">
+            <End Role="TestMachine" EntitySet="TestMachine" />
+            <End Role="DeviceUnderTest" EntitySet="DeviceUnderTest" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Job_Credential" Association="Self.FK_Job_Credential">
+            <End Role="UserCredential" EntitySet="UserCredential" />
+            <End Role="TestJob" EntitySet="TestJob" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Project_Product" Association="Self.FK_Project_Product">
+            <End Role="Product" EntitySet="Product" />
+            <End Role="Project" EntitySet="Project" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Release_Product" Association="Self.FK_Release_Product">
+            <End Role="Product" EntitySet="Product" />
+            <End Role="Release" EntitySet="Release" />
+          </AssociationSet>
+          <AssociationSet Name="FK_RoleOperationMap_Operation" Association="Self.FK_RoleOperationMap_Operation">
+            <End Role="Operation" EntitySet="Operation" />
+            <End Role="RoleOperationMap" EntitySet="RoleOperationMap" />
+          </AssociationSet>
+          <AssociationSet Name="FK_RoleOperationMap_Role" Association="Self.FK_RoleOperationMap_Role">
+            <End Role="Role" EntitySet="Role" />
+            <End Role="RoleOperationMap" EntitySet="RoleOperationMap" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Script_ScriptRepository" Association="Self.FK_Script_ScriptRepository">
+            <End Role="ScriptRepository" EntitySet="ScriptRepository" />
+            <End Role="Script" EntitySet="Script" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestBuild_ResultType" Association="Self.FK_TestBuild_ResultType">
+            <End Role="ResultType" EntitySet="ResultType" />
+            <End Role="TestBuild" EntitySet="TestBuild" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestCase_Job" Association="Self.FK_TestCase_Job">
+            <End Role="TestJob" EntitySet="TestJob" />
+            <End Role="TestCase" EntitySet="TestCase" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestCase_Script" Association="Self.FK_TestCase_Script">
+            <End Role="Script" EntitySet="Script" />
+            <End Role="TestCase" EntitySet="TestCase" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestJob_Project" Association="Self.FK_TestJob_Project">
+            <End Role="Project" EntitySet="Project" />
+            <End Role="TestJob" EntitySet="TestJob" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestJobParameters_TestJob" Association="Self.FK_TestJobParameters_TestJob">
+            <End Role="TestJob" EntitySet="TestJob" />
+            <End Role="TestJobParameters" EntitySet="TestJobParameters" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestJobReportTemplate_TestJob" Association="Self.FK_TestJobReportTemplate_TestJob">
+            <End Role="TestJob" EntitySet="TestJob" />
+            <End Role="TestJobReportTemplate" EntitySet="TestJobReportTemplate" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestMachine_Credential" Association="Self.FK_TestMachine_Credential">
+            <End Role="UserCredential" EntitySet="UserCredential" />
+            <End Role="TestMachine" EntitySet="TestMachine" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlan_Product" Association="Self.FK_TestPlan_Product">
+            <End Role="Product" EntitySet="Product" />
+            <End Role="TestPlan" EntitySet="TestPlan" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlanRecipe_TestCase" Association="Self.FK_TestPlanRecipe_TestCase">
+            <End Role="TestCase" EntitySet="TestCase" />
+            <End Role="TestPlanRecipe" EntitySet="TestPlanRecipe" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlanRecipe_TestPlan" Association="Self.FK_TestPlanRecipe_TestPlan">
+            <End Role="TestPlan" EntitySet="TestPlan" />
+            <End Role="TestPlanRecipe" EntitySet="TestPlanRecipe" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlanRecipe_TestSuite" Association="Self.FK_TestPlanRecipe_TestSuite">
+            <End Role="TestSuite" EntitySet="TestSuite" />
+            <End Role="TestPlanRecipe" EntitySet="TestPlanRecipe" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestReport_TestBuild" Association="Self.FK_TestReport_TestBuild">
+            <End Role="TestBuild" EntitySet="TestBuild" />
+            <End Role="TestReport" EntitySet="TestReport" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestReport_TestJobReportTemplate" Association="Self.FK_TestReport_TestJobReportTemplate">
+            <End Role="TestJobReportTemplate" EntitySet="TestJobReportTemplate" />
+            <End Role="TestReport" EntitySet="TestReport" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestResult_Build" Association="Self.FK_TestResult_Build">
+            <End Role="TestBuild" EntitySet="TestBuild" />
+            <End Role="TestResult" EntitySet="TestResult" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestResult_ResultType1" Association="Self.FK_TestResult_ResultType1">
+            <End Role="ResultType" EntitySet="ResultType" />
+            <End Role="TestResult" EntitySet="TestResult" />
+          </AssociationSet>
+          <AssociationSet Name="FK_User_Role" Association="Self.FK_User_Role">
+            <End Role="Role" EntitySet="Role" />
+            <End Role="User" EntitySet="User" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserGroupMap_User" Association="Self.FK_UserGroupMap_User">
+            <End Role="User" EntitySet="User" />
+            <End Role="UserGroupMap" EntitySet="UserGroupMap" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserGroupMap_UserGroup" Association="Self.FK_UserGroupMap_UserGroup">
+            <End Role="UserGroup" EntitySet="UserGroup" />
+            <End Role="UserGroupMap" EntitySet="UserGroupMap" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserRoleMap_Role" Association="Self.FK_UserRoleMap_Role">
+            <End Role="Role" EntitySet="Role" />
+            <End Role="UserRoleMap" EntitySet="UserRoleMap" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserRoleMap_User" Association="Self.FK_UserRoleMap_User">
+            <End Role="User" EntitySet="User" />
+            <End Role="UserRoleMap" EntitySet="UserRoleMap" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="TestManagementDBModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="DeviceUnderTest">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="machineId" Type="Int32" Nullable="false" />
+          <Property Name="productId" Type="Int32" />
+          <NavigationProperty Name="Product" Relationship="Self.FK_DeviceUnderTest_Product" FromRole="DeviceUnderTest" ToRole="Product" />
+          <NavigationProperty Name="TestMachine" Relationship="Self.FK_DeviceUnderTest_TestMachine" FromRole="DeviceUnderTest" ToRole="TestMachine" />
+        </EntityType>
+        <EntityType Name="GraphicTemplate">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="queryTemplate" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="type" Type="String" MaxLength="50" FixedLength="true" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Operation">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="32" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="Roles" Relationship="Self.RoleOperationMap" FromRole="Operation" ToRole="Role" />
+        </EntityType>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="DeviceUnderTests" Relationship="Self.FK_DeviceUnderTest_Product" FromRole="Product" ToRole="DeviceUnderTest" />
+          <NavigationProperty Name="Projects" Relationship="Self.FK_Project_Product" FromRole="Product" ToRole="Project" />
+          <NavigationProperty Name="Release" Relationship="Self.FK_Release_Product" FromRole="Product" ToRole="Release" />
+          <NavigationProperty Name="TestPlans" Relationship="Self.FK_TestPlan_Product" FromRole="Product" ToRole="TestPlan" />
+        </EntityType>
+        <EntityType Name="Project">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="true" Unicode="true" />
+          <Property Name="productId" Type="Int32" />
+          <NavigationProperty Name="Product" Relationship="Self.FK_Project_Product" FromRole="Project" ToRole="Product" />
+          <NavigationProperty Name="TestJobs" Relationship="Self.FK_TestJob_Project" FromRole="Project" ToRole="TestJob" />
+        </EntityType>
+        <EntityType Name="Release">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="version" Type="String" MaxLength="30" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="productId" Type="Int32" />
+          <NavigationProperty Name="Product" Relationship="Self.FK_Release_Product" FromRole="Release" ToRole="Product" />
+        </EntityType>
+        <EntityType Name="ResultType">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="true" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="TestBuilds" Relationship="Self.FK_Build_ResultType1" FromRole="ResultType" ToRole="TestBuild" />
+          <NavigationProperty Name="TestBuilds1" Relationship="Self.FK_TestBuild_ResultType" FromRole="ResultType" ToRole="TestBuild" />
+          <NavigationProperty Name="TestResults" Relationship="Self.FK_TestResult_ResultType1" FromRole="ResultType" ToRole="TestResult" />
+        </EntityType>
+        <EntityType Name="Role">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="32" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="Users" Relationship="Self.FK_User_Role" FromRole="Role" ToRole="User" />
+          <NavigationProperty Name="Operations" Relationship="Self.RoleOperationMap" FromRole="Role" ToRole="Operation" />
+          <NavigationProperty Name="Users1" Relationship="Self.UserRoleMap" FromRole="Role" ToRole="User" />
+        </EntityType>
+        <EntityType Name="Script">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="uri" Type="String" MaxLength="256" FixedLength="true" Unicode="true" />
+          <Property Name="scriptRepoId" Type="Int32" />
+          <Property Name="command" Type="String" MaxLength="1024" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="ScriptRepository" Relationship="Self.FK_Script_ScriptRepository" FromRole="Script" ToRole="ScriptRepository" />
+          <NavigationProperty Name="TestCases" Relationship="Self.FK_TestCase_Script" FromRole="Script" ToRole="TestCase" />
+        </EntityType>
+        <EntityType Name="ScriptRepository">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="10" FixedLength="true" Unicode="true" />
+          <Property Name="url" Type="String" MaxLength="256" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="Scripts" Relationship="Self.FK_Script_ScriptRepository" FromRole="ScriptRepository" ToRole="Script" />
+        </EntityType>
+        <EntityType Name="sysdiagram">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="TestArtifact">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="url" Type="String" MaxLength="1024" FixedLength="false" Unicode="true" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TestBuild">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" />
+          <Property Name="testJobId" Type="Int32" Nullable="false" />
+          <Property Name="timestamp" Type="DateTime" Nullable="false" Precision="7" />
+          <Property Name="buildResultId" Type="Int32" Nullable="false" />
+          <Property Name="testResultId" Type="Int32" Nullable="false" />
+          <Property Name="guid" Type="Guid" Nullable="false" />
+          <Property Name="startTime" Type="DateTime" Precision="7" />
+          <Property Name="endTime" Type="DateTime" Precision="7" />
+          <Property Name="timeoutHours" Type="Double" Nullable="false" />
+          <NavigationProperty Name="ResultType" Relationship="Self.FK_Build_ResultType1" FromRole="TestBuild" ToRole="ResultType" />
+          <NavigationProperty Name="ResultType1" Relationship="Self.FK_TestBuild_ResultType" FromRole="TestBuild" ToRole="ResultType" />
+          <NavigationProperty Name="TestJob" Relationship="Self.FK_Build_Job" FromRole="TestBuild" ToRole="TestJob" />
+          <NavigationProperty Name="TestReports" Relationship="Self.FK_TestReport_TestBuild" FromRole="TestBuild" ToRole="TestReport" />
+          <NavigationProperty Name="TestResults" Relationship="Self.FK_TestResult_Build" FromRole="TestBuild" ToRole="TestResult" />
+        </EntityType>
+        <EntityType Name="TestCase">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="jobId" Type="Int32" />
+          <Property Name="scriptId" Type="Int32" />
+          <NavigationProperty Name="Script" Relationship="Self.FK_TestCase_Script" FromRole="TestCase" ToRole="Script" />
+          <NavigationProperty Name="TestJob" Relationship="Self.FK_TestCase_Job" FromRole="TestCase" ToRole="TestJob" />
+          <NavigationProperty Name="TestPlanRecipes" Relationship="Self.FK_TestPlanRecipe_TestCase" FromRole="TestCase" ToRole="TestPlanRecipe" />
+        </EntityType>
+        <EntityType Name="TestJob">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="url" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="credentialId" Type="Int32" />
+          <Property Name="defaultTestMachineId" Type="Int32" />
+          <Property Name="projectId" Type="Int32" />
+          <NavigationProperty Name="Project" Relationship="Self.FK_TestJob_Project" FromRole="TestJob" ToRole="Project" />
+          <NavigationProperty Name="TestBuilds" Relationship="Self.FK_Build_Job" FromRole="TestJob" ToRole="TestBuild" />
+          <NavigationProperty Name="TestCases" Relationship="Self.FK_TestCase_Job" FromRole="TestJob" ToRole="TestCase" />
+          <NavigationProperty Name="UserCredential" Relationship="Self.FK_Job_Credential" FromRole="TestJob" ToRole="UserCredential" />
+          <NavigationProperty Name="TestJobParameters" Relationship="Self.FK_TestJobParameters_TestJob" FromRole="TestJob" ToRole="TestJobParameters" />
+          <NavigationProperty Name="TestJobReportTemplates" Relationship="Self.FK_TestJobReportTemplate_TestJob" FromRole="TestJob" ToRole="TestJobReportTemplate" />
+        </EntityType>
+        <EntityType Name="TestJobParameter">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="testJobId" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="10" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="value" Type="String" MaxLength="10" FixedLength="true" Unicode="true" />
+          <Property Name="defaultValue" Type="String" MaxLength="10" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="TestJob" Relationship="Self.FK_TestJobParameters_TestJob" FromRole="TestJobParameters" ToRole="TestJob" />
+        </EntityType>
+        <EntityType Name="TestJobReportTemplate">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="template" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="testJobId" Type="Int32" />
+          <Property Name="emailTo" Type="String" MaxLength="1024" FixedLength="false" Unicode="true" />
+          <Property Name="emailCc" Type="String" MaxLength="1024" FixedLength="false" Unicode="true" />
+          <Property Name="emailBcc" Type="String" MaxLength="1024" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="TestJob" Relationship="Self.FK_TestJobReportTemplate_TestJob" FromRole="TestJobReportTemplate" ToRole="TestJob" />
+          <NavigationProperty Name="TestReports" Relationship="Self.FK_TestReport_TestJobReportTemplate" FromRole="TestJobReportTemplate" ToRole="TestReport" />
+        </EntityType>
+        <EntityType Name="TestMachine">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="address" Type="String" MaxLength="256" FixedLength="true" Unicode="true" />
+          <Property Name="credentialId" Type="Int32" />
+          <NavigationProperty Name="DeviceUnderTests" Relationship="Self.FK_DeviceUnderTest_TestMachine" FromRole="TestMachine" ToRole="DeviceUnderTest" />
+          <NavigationProperty Name="UserCredential" Relationship="Self.FK_TestMachine_Credential" FromRole="TestMachine" ToRole="UserCredential" />
+        </EntityType>
+        <EntityType Name="TestPlan">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="productId" Type="Int32" />
+          <NavigationProperty Name="Product" Relationship="Self.FK_TestPlan_Product" FromRole="TestPlan" ToRole="Product" />
+          <NavigationProperty Name="TestPlanRecipes" Relationship="Self.FK_TestPlanRecipe_TestPlan" FromRole="TestPlan" ToRole="TestPlanRecipe" />
+        </EntityType>
+        <EntityType Name="TestPlanRecipe">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="testPlanId" Type="Int32" Nullable="false" />
+          <Property Name="testSuitId" Type="Int32" />
+          <Property Name="testCaseId" Type="Int32" />
+          <Property Name="schedual" Type="String" MaxLength="50" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="TestCase" Relationship="Self.FK_TestPlanRecipe_TestCase" FromRole="TestPlanRecipe" ToRole="TestCase" />
+          <NavigationProperty Name="TestPlan" Relationship="Self.FK_TestPlanRecipe_TestPlan" FromRole="TestPlanRecipe" ToRole="TestPlan" />
+          <NavigationProperty Name="TestSuite" Relationship="Self.FK_TestPlanRecipe_TestSuite" FromRole="TestPlanRecipe" ToRole="TestSuite" />
+        </EntityType>
+        <EntityType Name="TestReport">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="report" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="buildId" Type="Int64" Nullable="false" />
+          <Property Name="testReportTemplateId" Type="Int32" />
+          <NavigationProperty Name="TestBuild" Relationship="Self.FK_TestReport_TestBuild" FromRole="TestReport" ToRole="TestBuild" />
+          <NavigationProperty Name="TestJobReportTemplate" Relationship="Self.FK_TestReport_TestJobReportTemplate" FromRole="TestReport" ToRole="TestJobReportTemplate" />
+        </EntityType>
+        <EntityType Name="TestResult">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" />
+          <Property Name="testBuildId" Type="Int64" Nullable="false" />
+          <Property Name="TestResultId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="ResultType" Relationship="Self.FK_TestResult_ResultType1" FromRole="TestResult" ToRole="ResultType" />
+          <NavigationProperty Name="TestBuild" Relationship="Self.FK_TestResult_Build" FromRole="TestResult" ToRole="TestBuild" />
+        </EntityType>
+        <EntityType Name="TestSuite">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="TestPlanRecipes" Relationship="Self.FK_TestPlanRecipe_TestSuite" FromRole="TestSuite" ToRole="TestPlanRecipe" />
+        </EntityType>
+        <EntityType Name="User">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="32" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="token" Type="String" MaxLength="128" FixedLength="true" Unicode="true" />
+          <Property Name="roleId" Type="Int32" />
+          <NavigationProperty Name="Role" Relationship="Self.FK_User_Role" FromRole="User" ToRole="Role" />
+          <NavigationProperty Name="UserGroups" Relationship="Self.UserGroupMap" FromRole="User" ToRole="UserGroup" />
+          <NavigationProperty Name="Roles" Relationship="Self.UserRoleMap" FromRole="User" ToRole="Role" />
+        </EntityType>
+        <EntityType Name="UserCredential">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="userName" Type="String" MaxLength="50" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="password" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="token" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="createdby" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="scope" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="TestJobs" Relationship="Self.FK_Job_Credential" FromRole="UserCredential" ToRole="TestJob" />
+          <NavigationProperty Name="TestMachines" Relationship="Self.FK_TestMachine_Credential" FromRole="UserCredential" ToRole="TestMachine" />
+        </EntityType>
+        <EntityType Name="UserGroup">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="32" FixedLength="true" Unicode="true" />
+          <Property Name="description" Type="String" MaxLength="256" FixedLength="true" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="Users" Relationship="Self.UserGroupMap" FromRole="UserGroup" ToRole="User" />
+        </EntityType>
+        <Association Name="FK_DeviceUnderTest_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="0..1" />
+          <End Role="DeviceUnderTest" Type="Self.DeviceUnderTest" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="DeviceUnderTest">
+              <PropertyRef Name="productId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DeviceUnderTest_TestMachine">
+          <End Role="TestMachine" Type="Self.TestMachine" Multiplicity="1" />
+          <End Role="DeviceUnderTest" Type="Self.DeviceUnderTest" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestMachine">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="DeviceUnderTest">
+              <PropertyRef Name="machineId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Project_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="0..1" />
+          <End Role="Project" Type="Self.Project" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Project">
+              <PropertyRef Name="productId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Release_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="1" />
+          <End Role="Release" Type="Self.Release" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Release">
+              <PropertyRef Name="id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlan_Product">
+          <End Role="Product" Type="Self.Product" Multiplicity="0..1" />
+          <End Role="TestPlan" Type="Self.TestPlan" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Product">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlan">
+              <PropertyRef Name="productId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestJob_Project">
+          <End Role="Project" Type="Self.Project" Multiplicity="0..1" />
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Project">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJob">
+              <PropertyRef Name="projectId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Build_ResultType1">
+          <End Role="ResultType" Type="Self.ResultType" Multiplicity="1" />
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ResultType">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestBuild">
+              <PropertyRef Name="buildResultId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestBuild_ResultType">
+          <End Role="ResultType" Type="Self.ResultType" Multiplicity="1" />
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ResultType">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestBuild">
+              <PropertyRef Name="testResultId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestResult_ResultType1">
+          <End Role="ResultType" Type="Self.ResultType" Multiplicity="1" />
+          <End Role="TestResult" Type="Self.TestResult" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ResultType">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestResult">
+              <PropertyRef Name="TestResultId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_User_Role">
+          <End Role="Role" Type="Self.Role" Multiplicity="0..1" />
+          <End Role="User" Type="Self.User" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Role">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="User">
+              <PropertyRef Name="roleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Script_ScriptRepository">
+          <End Role="ScriptRepository" Type="Self.ScriptRepository" Multiplicity="0..1" />
+          <End Role="Script" Type="Self.Script" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ScriptRepository">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Script">
+              <PropertyRef Name="scriptRepoId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestCase_Script">
+          <End Role="Script" Type="Self.Script" Multiplicity="0..1" />
+          <End Role="TestCase" Type="Self.TestCase" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Script">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestCase">
+              <PropertyRef Name="scriptId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Build_Job">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="1" />
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestBuild">
+              <PropertyRef Name="testJobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestReport_TestBuild">
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="1" />
+          <End Role="TestReport" Type="Self.TestReport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestBuild">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestReport">
+              <PropertyRef Name="buildId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestResult_Build">
+          <End Role="TestBuild" Type="Self.TestBuild" Multiplicity="1" />
+          <End Role="TestResult" Type="Self.TestResult" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestBuild">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestResult">
+              <PropertyRef Name="testBuildId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestCase_Job">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="0..1" />
+          <End Role="TestCase" Type="Self.TestCase" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestCase">
+              <PropertyRef Name="jobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlanRecipe_TestCase">
+          <End Role="TestCase" Type="Self.TestCase" Multiplicity="0..1" />
+          <End Role="TestPlanRecipe" Type="Self.TestPlanRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestCase">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlanRecipe">
+              <PropertyRef Name="testCaseId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Job_Credential">
+          <End Role="UserCredential" Type="Self.UserCredential" Multiplicity="0..1" />
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserCredential">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJob">
+              <PropertyRef Name="credentialId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestJobParameters_TestJob">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="1" />
+          <End Role="TestJobParameters" Type="Self.TestJobParameter" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJobParameters">
+              <PropertyRef Name="testJobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestJobReportTemplate_TestJob">
+          <End Role="TestJob" Type="Self.TestJob" Multiplicity="0..1" />
+          <End Role="TestJobReportTemplate" Type="Self.TestJobReportTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJob">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestJobReportTemplate">
+              <PropertyRef Name="testJobId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestReport_TestJobReportTemplate">
+          <End Role="TestJobReportTemplate" Type="Self.TestJobReportTemplate" Multiplicity="0..1" />
+          <End Role="TestReport" Type="Self.TestReport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestJobReportTemplate">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestReport">
+              <PropertyRef Name="testReportTemplateId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestMachine_Credential">
+          <End Role="UserCredential" Type="Self.UserCredential" Multiplicity="0..1" />
+          <End Role="TestMachine" Type="Self.TestMachine" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserCredential">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestMachine">
+              <PropertyRef Name="credentialId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlanRecipe_TestPlan">
+          <End Role="TestPlan" Type="Self.TestPlan" Multiplicity="1" />
+          <End Role="TestPlanRecipe" Type="Self.TestPlanRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestPlan">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlanRecipe">
+              <PropertyRef Name="testPlanId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TestPlanRecipe_TestSuite">
+          <End Role="TestSuite" Type="Self.TestSuite" Multiplicity="0..1" />
+          <End Role="TestPlanRecipe" Type="Self.TestPlanRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TestSuite">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="TestPlanRecipe">
+              <PropertyRef Name="testSuitId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="RoleOperationMap">
+          <End Role="Operation" Type="Self.Operation" Multiplicity="*" />
+          <End Role="Role" Type="Self.Role" Multiplicity="*" />
+        </Association>
+        <Association Name="UserGroupMap">
+          <End Role="User" Type="Self.User" Multiplicity="*" />
+          <End Role="UserGroup" Type="Self.UserGroup" Multiplicity="*" />
+        </Association>
+        <Association Name="UserRoleMap">
+          <End Role="Role" Type="Self.Role" Multiplicity="*" />
+          <End Role="User" Type="Self.User" Multiplicity="*" />
+        </Association>
+        <EntityContainer Name="TestManagementDBEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="DeviceUnderTests" EntityType="Self.DeviceUnderTest" />
+          <EntitySet Name="GraphicTemplates" EntityType="Self.GraphicTemplate" />
+          <EntitySet Name="Operations" EntityType="Self.Operation" />
+          <EntitySet Name="Products" EntityType="Self.Product" />
+          <EntitySet Name="Projects" EntityType="Self.Project" />
+          <EntitySet Name="Releases" EntityType="Self.Release" />
+          <EntitySet Name="ResultTypes" EntityType="Self.ResultType" />
+          <EntitySet Name="Roles" EntityType="Self.Role" />
+          <EntitySet Name="Scripts" EntityType="Self.Script" />
+          <EntitySet Name="ScriptRepositories" EntityType="Self.ScriptRepository" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
+          <EntitySet Name="TestArtifacts" EntityType="Self.TestArtifact" />
+          <EntitySet Name="TestBuilds" EntityType="Self.TestBuild" />
+          <EntitySet Name="TestCases" EntityType="Self.TestCase" />
+          <EntitySet Name="TestJobs" EntityType="Self.TestJob" />
+          <EntitySet Name="TestJobParameters" EntityType="Self.TestJobParameter" />
+          <EntitySet Name="TestJobReportTemplates" EntityType="Self.TestJobReportTemplate" />
+          <EntitySet Name="TestMachines" EntityType="Self.TestMachine" />
+          <EntitySet Name="TestPlans" EntityType="Self.TestPlan" />
+          <EntitySet Name="TestPlanRecipes" EntityType="Self.TestPlanRecipe" />
+          <EntitySet Name="TestReports" EntityType="Self.TestReport" />
+          <EntitySet Name="TestResults" EntityType="Self.TestResult" />
+          <EntitySet Name="TestSuites" EntityType="Self.TestSuite" />
+          <EntitySet Name="Users" EntityType="Self.User" />
+          <EntitySet Name="UserCredentials" EntityType="Self.UserCredential" />
+          <EntitySet Name="UserGroups" EntityType="Self.UserGroup" />
+          <AssociationSet Name="FK_DeviceUnderTest_Product" Association="Self.FK_DeviceUnderTest_Product">
+            <End Role="Product" EntitySet="Products" />
+            <End Role="DeviceUnderTest" EntitySet="DeviceUnderTests" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DeviceUnderTest_TestMachine" Association="Self.FK_DeviceUnderTest_TestMachine">
+            <End Role="TestMachine" EntitySet="TestMachines" />
+            <End Role="DeviceUnderTest" EntitySet="DeviceUnderTests" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Project_Product" Association="Self.FK_Project_Product">
+            <End Role="Product" EntitySet="Products" />
+            <End Role="Project" EntitySet="Projects" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Release_Product" Association="Self.FK_Release_Product">
+            <End Role="Product" EntitySet="Products" />
+            <End Role="Release" EntitySet="Releases" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlan_Product" Association="Self.FK_TestPlan_Product">
+            <End Role="Product" EntitySet="Products" />
+            <End Role="TestPlan" EntitySet="TestPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestJob_Project" Association="Self.FK_TestJob_Project">
+            <End Role="Project" EntitySet="Projects" />
+            <End Role="TestJob" EntitySet="TestJobs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Build_ResultType1" Association="Self.FK_Build_ResultType1">
+            <End Role="ResultType" EntitySet="ResultTypes" />
+            <End Role="TestBuild" EntitySet="TestBuilds" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestBuild_ResultType" Association="Self.FK_TestBuild_ResultType">
+            <End Role="ResultType" EntitySet="ResultTypes" />
+            <End Role="TestBuild" EntitySet="TestBuilds" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestResult_ResultType1" Association="Self.FK_TestResult_ResultType1">
+            <End Role="ResultType" EntitySet="ResultTypes" />
+            <End Role="TestResult" EntitySet="TestResults" />
+          </AssociationSet>
+          <AssociationSet Name="FK_User_Role" Association="Self.FK_User_Role">
+            <End Role="Role" EntitySet="Roles" />
+            <End Role="User" EntitySet="Users" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Script_ScriptRepository" Association="Self.FK_Script_ScriptRepository">
+            <End Role="ScriptRepository" EntitySet="ScriptRepositories" />
+            <End Role="Script" EntitySet="Scripts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestCase_Script" Association="Self.FK_TestCase_Script">
+            <End Role="Script" EntitySet="Scripts" />
+            <End Role="TestCase" EntitySet="TestCases" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Build_Job" Association="Self.FK_Build_Job">
+            <End Role="TestJob" EntitySet="TestJobs" />
+            <End Role="TestBuild" EntitySet="TestBuilds" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestReport_TestBuild" Association="Self.FK_TestReport_TestBuild">
+            <End Role="TestBuild" EntitySet="TestBuilds" />
+            <End Role="TestReport" EntitySet="TestReports" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestResult_Build" Association="Self.FK_TestResult_Build">
+            <End Role="TestBuild" EntitySet="TestBuilds" />
+            <End Role="TestResult" EntitySet="TestResults" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestCase_Job" Association="Self.FK_TestCase_Job">
+            <End Role="TestJob" EntitySet="TestJobs" />
+            <End Role="TestCase" EntitySet="TestCases" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlanRecipe_TestCase" Association="Self.FK_TestPlanRecipe_TestCase">
+            <End Role="TestCase" EntitySet="TestCases" />
+            <End Role="TestPlanRecipe" EntitySet="TestPlanRecipes" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Job_Credential" Association="Self.FK_Job_Credential">
+            <End Role="UserCredential" EntitySet="UserCredentials" />
+            <End Role="TestJob" EntitySet="TestJobs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestJobParameters_TestJob" Association="Self.FK_TestJobParameters_TestJob">
+            <End Role="TestJob" EntitySet="TestJobs" />
+            <End Role="TestJobParameters" EntitySet="TestJobParameters" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestJobReportTemplate_TestJob" Association="Self.FK_TestJobReportTemplate_TestJob">
+            <End Role="TestJob" EntitySet="TestJobs" />
+            <End Role="TestJobReportTemplate" EntitySet="TestJobReportTemplates" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestReport_TestJobReportTemplate" Association="Self.FK_TestReport_TestJobReportTemplate">
+            <End Role="TestJobReportTemplate" EntitySet="TestJobReportTemplates" />
+            <End Role="TestReport" EntitySet="TestReports" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestMachine_Credential" Association="Self.FK_TestMachine_Credential">
+            <End Role="UserCredential" EntitySet="UserCredentials" />
+            <End Role="TestMachine" EntitySet="TestMachines" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlanRecipe_TestPlan" Association="Self.FK_TestPlanRecipe_TestPlan">
+            <End Role="TestPlan" EntitySet="TestPlans" />
+            <End Role="TestPlanRecipe" EntitySet="TestPlanRecipes" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TestPlanRecipe_TestSuite" Association="Self.FK_TestPlanRecipe_TestSuite">
+            <End Role="TestSuite" EntitySet="TestSuites" />
+            <End Role="TestPlanRecipe" EntitySet="TestPlanRecipes" />
+          </AssociationSet>
+          <AssociationSet Name="RoleOperationMap" Association="Self.RoleOperationMap">
+            <End Role="Operation" EntitySet="Operations" />
+            <End Role="Role" EntitySet="Roles" />
+          </AssociationSet>
+          <AssociationSet Name="UserGroupMap" Association="Self.UserGroupMap">
+            <End Role="User" EntitySet="Users" />
+            <End Role="UserGroup" EntitySet="UserGroups" />
+          </AssociationSet>
+          <AssociationSet Name="UserRoleMap" Association="Self.UserRoleMap">
+            <End Role="Role" EntitySet="Roles" />
+            <End Role="User" EntitySet="Users" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="TestManagementDBModelStoreContainer" CdmEntityContainer="TestManagementDBEntities">
+          <EntitySetMapping Name="DeviceUnderTests">
+            <EntityTypeMapping TypeName="TestManagementDBModel.DeviceUnderTest">
+              <MappingFragment StoreEntitySet="DeviceUnderTest">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="machineId" ColumnName="machineId" />
+                <ScalarProperty Name="productId" ColumnName="productId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="GraphicTemplates">
+            <EntityTypeMapping TypeName="TestManagementDBModel.GraphicTemplate">
+              <MappingFragment StoreEntitySet="GraphicTemplate">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="queryTemplate" ColumnName="queryTemplate" />
+                <ScalarProperty Name="type" ColumnName="type" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Operations">
+            <EntityTypeMapping TypeName="TestManagementDBModel.Operation">
+              <MappingFragment StoreEntitySet="Operation">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Products">
+            <EntityTypeMapping TypeName="TestManagementDBModel.Product">
+              <MappingFragment StoreEntitySet="Product">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Projects">
+            <EntityTypeMapping TypeName="TestManagementDBModel.Project">
+              <MappingFragment StoreEntitySet="Project">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="productId" ColumnName="productId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Releases">
+            <EntityTypeMapping TypeName="TestManagementDBModel.Release">
+              <MappingFragment StoreEntitySet="Release">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="productId" ColumnName="productId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ResultTypes">
+            <EntityTypeMapping TypeName="TestManagementDBModel.ResultType">
+              <MappingFragment StoreEntitySet="ResultType">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Roles">
+            <EntityTypeMapping TypeName="TestManagementDBModel.Role">
+              <MappingFragment StoreEntitySet="Role">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Scripts">
+            <EntityTypeMapping TypeName="TestManagementDBModel.Script">
+              <MappingFragment StoreEntitySet="Script">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="uri" ColumnName="uri" />
+                <ScalarProperty Name="scriptRepoId" ColumnName="scriptRepoId" />
+                <ScalarProperty Name="command" ColumnName="command" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ScriptRepositories">
+            <EntityTypeMapping TypeName="TestManagementDBModel.ScriptRepository">
+              <MappingFragment StoreEntitySet="ScriptRepository">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="url" ColumnName="url" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="TestManagementDBModel.sysdiagram">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="definition" ColumnName="definition" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestArtifacts">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestArtifact">
+              <MappingFragment StoreEntitySet="TestArtifact">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="url" ColumnName="url" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestBuilds">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestBuild">
+              <MappingFragment StoreEntitySet="TestBuild">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="testJobId" ColumnName="testJobId" />
+                <ScalarProperty Name="timestamp" ColumnName="timestamp" />
+                <ScalarProperty Name="buildResultId" ColumnName="buildResultId" />
+                <ScalarProperty Name="testResultId" ColumnName="testResultId" />
+                <ScalarProperty Name="guid" ColumnName="guid" />
+                <ScalarProperty Name="startTime" ColumnName="startTime" />
+                <ScalarProperty Name="endTime" ColumnName="endTime" />
+                <ScalarProperty Name="timeoutHours" ColumnName="timeoutHours" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestCases">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestCase">
+              <MappingFragment StoreEntitySet="TestCase">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="jobId" ColumnName="jobId" />
+                <ScalarProperty Name="scriptId" ColumnName="scriptId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestJobs">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestJob">
+              <MappingFragment StoreEntitySet="TestJob">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="url" ColumnName="url" />
+                <ScalarProperty Name="credentialId" ColumnName="credentialId" />
+                <ScalarProperty Name="defaultTestMachineId" ColumnName="defaultTestMachineId" />
+                <ScalarProperty Name="projectId" ColumnName="projectId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestJobParameters">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestJobParameter">
+              <MappingFragment StoreEntitySet="TestJobParameters">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="testJobId" ColumnName="testJobId" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="value" ColumnName="value" />
+                <ScalarProperty Name="defaultValue" ColumnName="defaultValue" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestJobReportTemplates">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestJobReportTemplate">
+              <MappingFragment StoreEntitySet="TestJobReportTemplate">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="template" ColumnName="template" />
+                <ScalarProperty Name="testJobId" ColumnName="testJobId" />
+                <ScalarProperty Name="emailTo" ColumnName="emailTo" />
+                <ScalarProperty Name="emailCc" ColumnName="emailCc" />
+                <ScalarProperty Name="emailBcc" ColumnName="emailBcc" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestMachines">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestMachine">
+              <MappingFragment StoreEntitySet="TestMachine">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="address" ColumnName="address" />
+                <ScalarProperty Name="credentialId" ColumnName="credentialId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestPlans">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestPlan">
+              <MappingFragment StoreEntitySet="TestPlan">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="productId" ColumnName="productId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestPlanRecipes">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestPlanRecipe">
+              <MappingFragment StoreEntitySet="TestPlanRecipe">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="testPlanId" ColumnName="testPlanId" />
+                <ScalarProperty Name="testSuitId" ColumnName="testSuitId" />
+                <ScalarProperty Name="testCaseId" ColumnName="testCaseId" />
+                <ScalarProperty Name="schedual" ColumnName="schedual" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestReports">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestReport">
+              <MappingFragment StoreEntitySet="TestReport">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="report" ColumnName="report" />
+                <ScalarProperty Name="buildId" ColumnName="buildId" />
+                <ScalarProperty Name="testReportTemplateId" ColumnName="testReportTemplateId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestResults">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestResult">
+              <MappingFragment StoreEntitySet="TestResult">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="testBuildId" ColumnName="testBuildId" />
+                <ScalarProperty Name="TestResultId" ColumnName="TestResultId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TestSuites">
+            <EntityTypeMapping TypeName="TestManagementDBModel.TestSuite">
+              <MappingFragment StoreEntitySet="TestSuite">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Users">
+            <EntityTypeMapping TypeName="TestManagementDBModel.User">
+              <MappingFragment StoreEntitySet="User">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="token" ColumnName="token" />
+                <ScalarProperty Name="roleId" ColumnName="roleId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserCredentials">
+            <EntityTypeMapping TypeName="TestManagementDBModel.UserCredential">
+              <MappingFragment StoreEntitySet="UserCredential">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="userName" ColumnName="userName" />
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="token" ColumnName="token" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="createdby" ColumnName="createdby" />
+                <ScalarProperty Name="scope" ColumnName="scope" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserGroups">
+            <EntityTypeMapping TypeName="TestManagementDBModel.UserGroup">
+              <MappingFragment StoreEntitySet="UserGroup">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="RoleOperationMap" TypeName="TestManagementDBModel.RoleOperationMap" StoreEntitySet="RoleOperationMap">
+            <EndProperty Name="Operation">
+              <ScalarProperty Name="id" ColumnName="operationId" />
+            </EndProperty>
+            <EndProperty Name="Role">
+              <ScalarProperty Name="id" ColumnName="roleId" />
+            </EndProperty>
+          </AssociationSetMapping>
+          <AssociationSetMapping Name="UserGroupMap" TypeName="TestManagementDBModel.UserGroupMap" StoreEntitySet="UserGroupMap">
+            <EndProperty Name="User">
+              <ScalarProperty Name="id" ColumnName="userId" />
+            </EndProperty>
+            <EndProperty Name="UserGroup">
+              <ScalarProperty Name="id" ColumnName="groupId" />
+            </EndProperty>
+          </AssociationSetMapping>
+          <AssociationSetMapping Name="UserRoleMap" TypeName="TestManagementDBModel.UserRoleMap" StoreEntitySet="UserRoleMap">
+            <EndProperty Name="Role">
+              <ScalarProperty Name="id" ColumnName="roleId" />
+            </EndProperty>
+            <EndProperty Name="User">
+              <ScalarProperty Name="id" ColumnName="userId" />
+            </EndProperty>
+          </AssociationSetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

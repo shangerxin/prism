@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="c8190297326a43f1bfef00c4275f0cb8" Name="Diagram1">
+        <EntityTypeShape EntityType="TestManagementDBModel.DeviceUnderTest" Width="1.5" PointX="3" PointY="9.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.GraphicTemplate" Width="1.5" PointX="9.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.Operation" Width="1.5" PointX="0.75" PointY="1.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.Product" Width="1.5" PointX="0.75" PointY="12.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.Project" Width="1.5" PointX="3" PointY="13" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.Release" Width="1.5" PointX="3" PointY="15.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.ResultType" Width="1.5" PointX="5.25" PointY="9.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.Role" Width="1.5" PointX="3" PointY="1" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.Script" Width="1.5" PointX="8.25" PointY="5.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.ScriptRepository" Width="1.5" PointX="6" PointY="6.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.sysdiagram" Width="1.5" PointX="10.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestArtifact" Width="1.5" PointX="10.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestBuild" Width="1.5" PointX="7.5" PointY="12.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestCase" Width="1.5" PointX="10.5" PointY="13" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestJob" Width="1.5" PointX="5.25" PointY="12.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestJobParameter" Width="1.5" PointX="7.5" PointY="18.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestJobReportTemplate" Width="1.5" PointX="7.5" PointY="21.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestMachine" Width="1.5" PointX="0.75" PointY="8.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestPlan" Width="1.5" PointX="3" PointY="18.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestPlanRecipe" Width="1.5" PointX="12.75" PointY="15.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestReport" Width="1.5" PointX="9.75" PointY="17.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestResult" Width="1.5" PointX="9.75" PointY="10.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.TestSuite" Width="1.5" PointX="10.5" PointY="21" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.User" Width="1.5" PointX="5.25" PointY="1" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.UserCredential" Width="1.5" PointX="1.5" PointY="4.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="TestManagementDBModel.UserGroup" Width="1.5" PointX="7.5" PointY="1.25" IsExpanded="true" />
+        <AssociationConnector Association="TestManagementDBModel.FK_DeviceUnderTest_Product" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_DeviceUnderTest_TestMachine" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_Project_Product" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_Release_Product" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestPlan_Product" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestJob_Project" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_Build_ResultType1" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestBuild_ResultType" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestResult_ResultType1" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_User_Role" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_Script_ScriptRepository" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestCase_Script" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_Build_Job" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestReport_TestBuild" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestResult_Build" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestCase_Job" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestPlanRecipe_TestCase" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_Job_Credential" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestJobParameters_TestJob" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestJobReportTemplate_TestJob" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestReport_TestJobReportTemplate" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestMachine_Credential" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestPlanRecipe_TestPlan" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.FK_TestPlanRecipe_TestSuite" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.RoleOperationMap" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.UserGroupMap" ManuallyRouted="false" />
+        <AssociationConnector Association="TestManagementDBModel.UserRoleMap" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
