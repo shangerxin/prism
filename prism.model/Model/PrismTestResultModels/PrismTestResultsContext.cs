@@ -13,18 +13,24 @@ namespace prism.web.service.Model
     public class PrismTestResultsContext : IPrismTestResultsContext
     {
         private bool disposedValue;
+        protected IMongoClient _client;
+
+        public PrismTestResultsContext()
+        {
+
+        }
 
         //// 1. Your arbitrary JSON string
         //string json = "{ 'name': 'John Doe', 'age': 30, 'tags': ['csharp', 'mongodb'] }";
 
-        //// 2. Parse the JSON into a BsonDocument
-        //var document = BsonDocument.Parse(json);
+            //// 2. Parse the JSON into a BsonDocument
+            //var document = BsonDocument.Parse(json);
 
-        //// 3. Get your collection (typed as BsonDocument for arbitrary data)
-        //var collection = database.GetCollection<BsonDocument>("MyCollection");
+            //// 3. Get your collection (typed as BsonDocument for arbitrary data)
+            //var collection = database.GetCollection<BsonDocument>("MyCollection");
 
-        //// 4. Insert the document
-        //await collection.InsertOneAsync(document);
+            //// 4. Insert the document
+            //await collection.InsertOneAsync(document);
 
         public Task<bool> AddEnvironment(string environment)
         {

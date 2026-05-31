@@ -1,9 +1,9 @@
 ﻿use TestManagementDB;
 
 delete from ResultType;
-insert into ResultType (id, name) values (0, 'Pass');
-insert into ResultType (id, name) values (1, 'Fail');
-insert into ResultType (id, name) values (2, 'NotExecuted');
+insert into ResultType (id, name) values (0, 'NotExecuted');
+insert into ResultType (id, name) values (1, 'Pass');
+insert into ResultType (id, name) values (2, 'Fail');
 insert into ResultType (id, name) values (3, 'Blocked');
 insert into ResultType (id, name) values (4, 'InProgress');
 insert into ResultType (id, name) values (5, 'Hang');

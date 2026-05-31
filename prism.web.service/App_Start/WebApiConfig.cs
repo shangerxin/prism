@@ -10,7 +10,7 @@ namespace prism.web.service
     {
         public static void Register(HttpConfiguration config)
         {
-            var apiVersion = ConfigurationManager.AppSettings["prismapi:Version"];
+            var apiVersion = ServiceHelper.GetApiVersion();
             // Web API configuration and services
 
             // Web API routes
