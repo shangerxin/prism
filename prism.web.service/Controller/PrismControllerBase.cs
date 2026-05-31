@@ -12,13 +12,13 @@ namespace prism.web.service.Controller
 {
     public abstract class PrismControllerBase: ApiController
     {
-        protected TestManagementDBEntities _managementDb { 
+        protected TestManagementDBEntities managementDb { 
             get { 
                 return new TestManagementDBEntities();
             } 
         }
 
-        protected PrismTestResultsContext _resultDb
+        protected PrismTestResultsContext resultDb
         {
             get
             {

@@ -56,7 +56,10 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="Controller\TestControllerBase.cs" />
+    <Compile Include="Controller\TestJobControllerTests.cs" />
+    <Compile Include="Fixtures\MockTestManagementDB.cs" />
+    <Compile Include="Fixtures\MockTestResultDB.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -64,11 +67,20 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\prism.infra\prism.infra.csproj">
+      <Project>{aaf38e0b-895b-45a3-ba12-bb5e1630ab0d}</Project>
+      <Name>prism.infra</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\prism.model\prism.model.csproj">
+      <Project>{ccc9af67-0bc7-4bd1-b355-25c3b2088287}</Project>
+      <Name>prism.model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\prism.web.service\prism.web.service.csproj">
       <Project>{4FC6AF11-1455-4AB5-9865-A8C6D7A6823A}</Project>
       <Name>prism.web.service</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

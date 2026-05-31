@@ -27,9 +27,7 @@ namespace prism.web.ui.Test
         [TestMethod]
         public void VerifyPageTitle()
         {
-            // Replace with your own test logic
-            _driver.Url = "https://www.bing.com";
-            Assert.AreEqual("Bing", _driver.Title);
+
         }
 
         [TestCleanup]

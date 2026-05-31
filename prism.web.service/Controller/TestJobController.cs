@@ -14,18 +14,18 @@ namespace prism.web.service.Controller
         // GET: api/v{apiVersion}/TestJob
         public List<TestJob> Get()
         {
-            using (_managementDb)
+            using (managementDb)
             {
-                return _managementDb.TestJobs.ToList();
+                return managementDb.TestJobs.ToList();
             }
         }
 
         // GET: api/v{apiVersion}/TestJob/5
         public TestJob Get(int id)
         {
-            using (_managementDb)
+            using (managementDb)
             {
-                return _managementDb.TestJobs.SingleOrDefault(t => t.id == id);
+                return managementDb.TestJobs.SingleOrDefault(t => t.id == id);
             }
         }
 
@@ -33,9 +33,9 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/TestJob/Id/{name}")]
         public string Id(string name)
         {
-            using (_managementDb)
+            using (managementDb)
             {
-                return _managementDb.TestJobs.Where(p => p.name == name).FirstOrDefault()?.id.ToString();
+                return managementDb.TestJobs.Where(p => p.name == name).FirstOrDefault()?.id.ToString();
             }
         }
 
@@ -43,10 +43,10 @@ namespace prism.web.service.Controller
         public void Post([FromBody]string value)
         {
             var testJob = JsonSerializer.Deserialize<TestJob>(value);
-            using (_managementDb)
+            using (managementDb)
             {
-                _managementDb.TestJobs.Add(testJob);
-                _managementDb.SaveChanges();
+                managementDb.TestJobs.Add(testJob);
+                managementDb.SaveChanges();
             }
         }
 
@@ -54,9 +54,9 @@ namespace prism.web.service.Controller
         public void Put(int id, [FromBody]string value)
         {
             var testJob = JsonSerializer.Deserialize<TestJob>(value);
-            using (_managementDb)
+            using (managementDb)
             {
-                var existingTestJob = _managementDb.TestJobs.SingleOrDefault(t => t.id == id);
+                var existingTestJob = managementDb.TestJobs.SingleOrDefault(t => t.id == id);
                 if (existingTestJob != null)
                 {
                     existingTestJob.name = testJob.name;
@@ -64,7 +64,7 @@ namespace prism.web.service.Controller
                     existingTestJob.credentialId = testJob.credentialId;
                     existingTestJob.defaultTestMachineId = testJob.defaultTestMachineId;
                     existingTestJob.projectId = testJob.projectId;
-                    _managementDb.SaveChanges();
+                    managementDb.SaveChanges();
                 }
             }
         }
@@ -72,13 +72,13 @@ namespace prism.web.service.Controller
         // DELETE: api/v{apiVersion}/TestJob/5
         public void Delete(int id)
         {
-            using (_managementDb)
+            using (managementDb)
             {
-                var testJob = _managementDb.TestJobs.SingleOrDefault(t => t.id == id);
+                var testJob = managementDb.TestJobs.SingleOrDefault(t => t.id == id);
                 if (testJob != null)
                 {
-                    _managementDb.TestJobs.Remove(testJob);
-                    _managementDb.SaveChanges();
+                    managementDb.TestJobs.Remove(testJob);
+                    managementDb.SaveChanges();
                 }
             }
         }

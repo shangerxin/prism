@@ -16,18 +16,18 @@ namespace prism.web.service.Controller
         }
 
         public List<Project> Get() {
-            using (_managementDb)
+            using (managementDb)
             {
-                return _managementDb.Projects.ToList();
+                return managementDb.Projects.ToList();
             }
         }
 
         // GET: api/v{apiVersion}/Project/5
         public Project Get(int id)
         {
-            using (_managementDb)
+            using (managementDb)
             {
-                return _managementDb.Projects.Where(p => p.id == id).FirstOrDefault();
+                return managementDb.Projects.Where(p => p.id == id).FirstOrDefault();
             }
         }
 
@@ -35,34 +35,34 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Project/Id/{name}")]      
         public string Id(string name)
         {
-            using (_managementDb)
+            using (managementDb)
             {
-                return _managementDb.Projects.Where(p => p.name == name).FirstOrDefault()?.id.ToString();
+                return managementDb.Projects.Where(p => p.name == name).FirstOrDefault()?.id.ToString();
             }
         }
 
         // POST: api/v{apiVersion}/Project
         public void Post([FromBody]string value)
         {
-            using (_managementDb) {
+            using (managementDb) {
                 var project = JsonSerializer.Deserialize<Project>(value);
-                _managementDb.Projects.Add(project);
-                _managementDb.SaveChanges();
+                managementDb.Projects.Add(project);
+                managementDb.SaveChanges();
             }   
         }
 
         // PUT: api/v{apiVersion}/Project/5
         public void Put(int id, [FromBody]string value)
         {
-            using (_managementDb) {
+            using (managementDb) {
                 var project = JsonSerializer.Deserialize<Project>(value);
-                var existingProject = _managementDb.Projects.SingleOrDefault(p => p.id == id);
+                var existingProject = managementDb.Projects.SingleOrDefault(p => p.id == id);
                 if (existingProject != null)
                 {
                     existingProject.name = project.name;
                     existingProject.description = project.description;
                     existingProject.productId = project.productId;
-                    _managementDb.SaveChanges();
+                    managementDb.SaveChanges();
                 }
             }
         }
@@ -70,12 +70,12 @@ namespace prism.web.service.Controller
         // DELETE: api/v{apiVersion}/Project/5
         public void Delete(int id)
         {
-            using (_managementDb) {
-                var project = _managementDb.Projects.SingleOrDefault(p => p.id == id);
+            using (managementDb) {
+                var project = managementDb.Projects.SingleOrDefault(p => p.id == id);
                 if (project != null)
                 {
-                    _managementDb.Projects.Remove(project);
-                    _managementDb.SaveChanges();
+                    managementDb.Projects.Remove(project);
+                    managementDb.SaveChanges();
                 }
             }
         }
