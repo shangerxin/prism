@@ -247,6 +247,11 @@
       <DependentUpon>PrismTestManagementModels.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Script\ResultTypes.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ResultTypes.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -274,6 +279,10 @@
     <Content Include="Script\CreatePrism.sql" />
     <Content Include="Script\CreatePrismMongoDB.js" />
     <Content Include="Script\InitPrismDB.sql" />
+    <Content Include="Script\ResultTypes.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ResultTypes.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

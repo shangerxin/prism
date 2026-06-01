@@ -7,6 +7,7 @@ using System.Web.Http;
 using System.Text.Json;
 
 using prism.model.Model;
+using prism.web.service.Model;
 
 namespace prism.web.service.Controller
 {
@@ -45,6 +46,47 @@ namespace prism.web.service.Controller
                     return managementDb.TestBuilds.Where(p => p.guid == parsedGuid).FirstOrDefault()?.id.ToString();
                 }
                 return null;
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/TestBuild/GUID/{id}")]
+        public string GUID(int id)
+        {
+            using (managementDb)
+            {
+                return managementDb.TestBuilds.Where(p => p.id == id).FirstOrDefault()?.guid.ToString();
+            }
+        }
+
+
+        [HttpGet]
+        public TestBuild LastSuccess(string testJobName)
+        {
+            using (managementDb)
+            {
+                var testJobId = managementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
+                if (testJobId == null) { return null; }
+                var lastSuccess = (from testBuild in managementDb.TestBuilds
+                                   where testJobId == testBuild.testJobId && testBuild.buildResultId == (int)ResultTypes.Pass
+                                   orderby testBuild.timestamp descending 
+                                   select testBuild).FirstOrDefault();
+                return lastSuccess;
+            }
+        }
+
+        [HttpGet]
+        public List<TestBuild> BuildList(string testJobName, DateTime start, DateTime end)
+        {
+            using (managementDb)
+            {
+                var testJobId = managementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
+                if (testJobId == null) { return null; }
+                var buildList = (from testBuild in managementDb.TestBuilds
+                                 where testBuild.testJobId == testJobId && testBuild.timestamp >= start && testBuild.timestamp <= end
+                                 orderby testBuild.timestamp
+                                 select testBuild).ToList();
+                return buildList;
             }
         }
 
