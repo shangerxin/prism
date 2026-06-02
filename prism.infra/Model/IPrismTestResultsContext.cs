@@ -7,8 +7,8 @@ namespace prism.infra.Model
 {
     public interface IPrismTestResultsContext: IDisposable
     {
-        Task ConnectDB(string connectionString);
-        Task DisconnectDB();
+        bool Connect(string connectString = "mongodb://localhost:27017/", string database = "prism");
+        void DisconnectDB();
         Task SaveChanges();
 
         Task<bool> AddResult(string result);
