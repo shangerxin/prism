@@ -124,7 +124,7 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}/{testResultType}")]
+        [Route(ServiceHelper.ApiPrefix + "/TestBuild/BuildList/{testJobName}/{start}/{end}")]
         public string BuildList(string testJobName, DateTime start, DateTime end)
         {
             using (managementDb)
