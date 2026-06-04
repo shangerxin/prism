@@ -8,30 +8,60 @@ using System.Text.Json;
 
 using prism.model.Model;
 using prism.web.service.Model;
+using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
 
 namespace prism.web.service.Controller
 {
-    public class TestBuildController : PrismControllerBase
+    public class TestBuildController : PrismControllerBase<TestBuild>
     {
         public TestBuildController()
         {
         }
 
+        protected override object ToSerizalizable(TestBuild x)
+        {
+            return new
+            {
+                x.id,
+                x.guid,
+                x.testJobId,
+                x.buildResultId,
+                x.testResultId,
+                x.startTime,
+                x.endTime
+            };
+        }
+
+        protected int? getTestJobId(string testJobName)
+        {
+            return managementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
+        }
+
         // GET api/<controller>
-        public List<TestBuild> Get()
+        public string Get()
         {
             using(managementDb)
             {
-                return managementDb.TestBuilds.ToList();
+                var results = managementDb.TestBuilds.ToList().Select(t => this.ToSerizalizable(t));
+                return JsonSerializer.Serialize(results);
             }
         }
 
         // GET api/<controller>/5
-        public TestBuild Get(int id)
+        public string Get(int id)
         {
             using (managementDb)
             {
-                return managementDb.TestBuilds.Where(p => p.id == id).FirstOrDefault();
+                var testBuild = managementDb.TestBuilds.Where(p => p.id == id).FirstOrDefault();
+                if(testBuild == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    var result = ToSerizalizable(testBuild);
+                    return JsonSerializer.Serialize(result);
+                }
             }
         }
 
@@ -61,22 +91,41 @@ namespace prism.web.service.Controller
 
 
         [HttpGet]
-        public TestBuild LastSuccess(string testJobName)
+        [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}")]
+        public string LastSuccess(string testJobName)
         {
             using (managementDb)
             {
-                var testJobId = managementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
+                var testJobId = getTestJobId(testJobName);
                 if (testJobId == null) { return null; }
                 var lastSuccess = (from testBuild in managementDb.TestBuilds
                                    where testJobId == testBuild.testJobId && testBuild.buildResultId == (int)ResultTypes.Pass
                                    orderby testBuild.timestamp descending 
                                    select testBuild).FirstOrDefault();
-                return lastSuccess;
+                return Serizalize(lastSuccess);
             }
         }
 
         [HttpGet]
-        public List<TestBuild> BuildList(string testJobName, DateTime start, DateTime end)
+        [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}/{testResultType}")]
+        public string Last(string testJobName, string testResultType)
+        {
+            using (managementDb)
+            {
+                var testJobId = getTestJobId(testJobName);
+                var resultType = managementDb.ResultTypes.Where(r => r.name == testResultType).FirstOrDefault();
+                if (testJobId == null || resultType == null) { return null; }
+                var last = (from testBuild in managementDb.TestBuilds
+                            where testJobId == testBuild.testJobId && testBuild.testResultId == resultType.id
+                            orderby testBuild.timestamp descending
+                            select testBuild).FirstOrDefault();
+                return Serizalize(last);
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}/{testResultType}")]
+        public string BuildList(string testJobName, DateTime start, DateTime end)
         {
             using (managementDb)
             {
@@ -86,28 +135,30 @@ namespace prism.web.service.Controller
                                  where testBuild.testJobId == testJobId && testBuild.timestamp >= start && testBuild.timestamp <= end
                                  orderby testBuild.timestamp
                                  select testBuild).ToList();
-                return buildList;
+                return JsonSerializer.Serialize(buildList.Select(t => ToSerizalizable(t)));
             }
         }
 
         // POST api/<controller>
-        public void Post([FromBody] string value)
+        public TestBuild Post([FromBody] string value)
         {
             var testBuild = JsonSerializer.Deserialize<TestBuild>(value);
             using (managementDb)
-            {
+            {      
+                testBuild.timestamp = testBuild.startTime?? DateTime.Now;
                 managementDb.TestBuilds.Add(testBuild);
                 managementDb.SaveChanges();
             }
+            return testBuild;
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
+        public bool Put(int id, [FromBody] string value)
         {
             var testBuild = JsonSerializer.Deserialize<TestBuild>(value);
             using (managementDb)
             {
-                var existingTestBuild = managementDb.TestBuilds.SingleOrDefault(t => t.id == id);
+                var existingTestBuild = managementDb.TestBuilds.SingleOrDefault(t => t.guid == testBuild.guid || t.id == id);
                 if (existingTestBuild != null)
                 {
                     existingTestBuild.testJobId = testBuild.testJobId;
@@ -116,8 +167,10 @@ namespace prism.web.service.Controller
                     existingTestBuild.startTime = testBuild.startTime;
                     existingTestBuild.endTime = testBuild.endTime;
                     managementDb.SaveChanges();
+                    return true;
                 }
             }
+            return false;
         }
 
         // DELETE api/<controller>/5

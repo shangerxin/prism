@@ -4,12 +4,12 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="TestManagementDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="TestManagementDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="DeviceUnderTest">
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
           <Property Name="description" Type="nvarchar" MaxLength="256" />
           <Property Name="machineId" Type="int" Nullable="false" />
@@ -19,7 +19,7 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="queryTemplate" Type="text" />
           <Property Name="type" Type="nchar" MaxLength="50" />
@@ -28,7 +28,7 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="32" Nullable="false" />
           <Property Name="description" Type="nchar" MaxLength="256" />
         </EntityType>
@@ -36,7 +36,7 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
           <Property Name="description" Type="nvarchar" MaxLength="256" />
         </EntityType>
@@ -44,7 +44,7 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
           <Property Name="description" Type="nchar" MaxLength="256" />
           <Property Name="productId" Type="int" />
@@ -53,7 +53,7 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="version" Type="nchar" MaxLength="30" Nullable="false" />
           <Property Name="productId" Type="int" />
         </EntityType>
@@ -61,14 +61,14 @@
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="50" Nullable="false" />
         </EntityType>
         <EntityType Name="Role">
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="32" Nullable="false" />
           <Property Name="description" Type="nchar" MaxLength="256" />
         </EntityType>
@@ -86,7 +86,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
           <Property Name="uri" Type="nchar" MaxLength="256" />
           <Property Name="scriptRepoId" Type="int" />
@@ -96,7 +96,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="10" />
           <Property Name="url" Type="nchar" MaxLength="256" />
         </EntityType>
@@ -122,7 +122,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="bigint" Nullable="false" />
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="testJobId" Type="int" Nullable="false" />
           <Property Name="timestamp" Type="datetime2" Precision="7" Nullable="false" />
           <Property Name="buildResultId" Type="int" Nullable="false" />
@@ -136,7 +136,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="jobId" Type="int" />
           <Property Name="scriptId" Type="int" />
         </EntityType>
@@ -144,7 +144,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
           <Property Name="url" Type="nvarchar" MaxLength="256" />
           <Property Name="credentialId" Type="int" />
@@ -155,7 +155,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="testJobId" Type="int" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="10" Nullable="false" />
           <Property Name="value" Type="nchar" MaxLength="10" />
@@ -165,7 +165,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
           <Property Name="template" Type="text" Nullable="false" />
           <Property Name="testJobId" Type="int" />
@@ -177,7 +177,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="256" Nullable="false" />
           <Property Name="address" Type="nchar" MaxLength="256" />
           <Property Name="credentialId" Type="int" />
@@ -186,7 +186,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="description" Type="nvarchar" MaxLength="256" />
           <Property Name="productId" Type="int" />
@@ -195,7 +195,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="testPlanId" Type="int" Nullable="false" />
           <Property Name="testSuitId" Type="int" />
           <Property Name="testCaseId" Type="int" />
@@ -205,7 +205,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nvarchar" MaxLength="256" Nullable="false" />
           <Property Name="report" Type="text" />
           <Property Name="buildId" Type="bigint" Nullable="false" />
@@ -223,14 +223,14 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="User">
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="32" Nullable="false" />
           <Property Name="token" Type="nchar" MaxLength="128" />
           <Property Name="roleId" Type="int" />
@@ -251,7 +251,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.RoleOperationMap' does not ha
           <Key>
             <PropertyRef Name="id" />
           </Key>
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nchar" MaxLength="32" />
           <Property Name="description" Type="nchar" MaxLength="256" Nullable="false" />
         </EntityType>
@@ -801,8 +801,7 @@ warning 6002: The table/view 'TestManagementDB.dbo.UserRoleMap' does not have a 
             <End Role="UserRoleMap" EntitySet="UserRoleMap" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="TestManagementDBModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">

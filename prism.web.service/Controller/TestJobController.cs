@@ -9,14 +9,14 @@ using System.Text.Json;
 
 namespace prism.web.service.Controller
 {
-    public class TestJobController : PrismControllerBase
+    public class TestJobController : PrismControllerBase<TestJob>
     {
         // GET: api/v{apiVersion}/TestJob
-        public List<TestJob> Get()
+        public string Get()
         {
             using (managementDb)
             {
-                return managementDb.TestJobs.ToList();
+                return JsonSerializer.Serialize(managementDb.TestJobs.ToList().Select(x => ToSerizalizable(x)));
             }
         }
 
@@ -39,8 +39,9 @@ namespace prism.web.service.Controller
             }
         }
 
+        [HttpPost]
         // POST: api/v{apiVersion}/TestJob
-        public void Post([FromBody]string value)
+        public TestJob Post([FromBody]string value)
         {
             var testJob = JsonSerializer.Deserialize<TestJob>(value);
             using (managementDb)
@@ -48,15 +49,16 @@ namespace prism.web.service.Controller
                 managementDb.TestJobs.Add(testJob);
                 managementDb.SaveChanges();
             }
+            return testJob;
         }
 
         // PUT: api/v{apiVersion}/TestJob/5
-        public void Put(int id, [FromBody]string value)
+        public bool Put(int id, [FromBody]string value)
         {
             var testJob = JsonSerializer.Deserialize<TestJob>(value);
             using (managementDb)
             {
-                var existingTestJob = managementDb.TestJobs.SingleOrDefault(t => t.id == id);
+                var existingTestJob = managementDb.TestJobs.SingleOrDefault(t => t.name == testJob.name || t.id == id);
                 if (existingTestJob != null)
                 {
                     existingTestJob.name = testJob.name;
@@ -65,8 +67,10 @@ namespace prism.web.service.Controller
                     existingTestJob.defaultTestMachineId = testJob.defaultTestMachineId;
                     existingTestJob.projectId = testJob.projectId;
                     managementDb.SaveChanges();
+                    return true;
                 }
             }
+            return false;
         }
 
         // DELETE: api/v{apiVersion}/TestJob/5
@@ -81,6 +85,18 @@ namespace prism.web.service.Controller
                     managementDb.SaveChanges();
                 }
             }
+        }
+
+        protected override object ToSerizalizable(TestJob x)
+        {
+            return new
+            {
+                name = x.name.Trim(),
+                x.url,
+                x.credentialId,
+                x.defaultTestMachineId,
+                x.projectId
+            };
         }
     }
 }

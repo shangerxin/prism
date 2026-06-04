@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace prism.web.service.Controller
 {
-    public class ProjectController : PrismControllerBase
+    public class ProjectController : PrismControllerBase<Project>
     {
         public ProjectController()
         {
@@ -42,29 +42,32 @@ namespace prism.web.service.Controller
         }
 
         // POST: api/v{apiVersion}/Project
-        public void Post([FromBody]string value)
+        public Project Post([FromBody]string value)
         {
             using (managementDb) {
                 var project = JsonSerializer.Deserialize<Project>(value);
                 managementDb.Projects.Add(project);
                 managementDb.SaveChanges();
+                return project;
             }   
         }
 
         // PUT: api/v{apiVersion}/Project/5
-        public void Put(int id, [FromBody]string value)
+        public bool Put(int id, [FromBody]string value)
         {
             using (managementDb) {
                 var project = JsonSerializer.Deserialize<Project>(value);
-                var existingProject = managementDb.Projects.SingleOrDefault(p => p.id == id);
+                var existingProject = managementDb.Projects.SingleOrDefault(p => p.id == id || p.name == project.name);
                 if (existingProject != null)
                 {
                     existingProject.name = project.name;
                     existingProject.description = project.description;
                     existingProject.productId = project.productId;
                     managementDb.SaveChanges();
+                    return true;
                 }
             }
+            return false;
         }
 
         // DELETE: api/v{apiVersion}/Project/5
@@ -78,6 +81,11 @@ namespace prism.web.service.Controller
                     managementDb.SaveChanges();
                 }
             }
+        }
+
+        protected override object ToSerizalizable(Project x)
+        {
+            return  new { x.id, name = x.name.Trim(), x.description, x.productId };
         }
     }
 }

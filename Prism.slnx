@@ -14,6 +14,7 @@
     <File Path="version.txt" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="prism.model.Test/prism.model.Test.csproj" Id="153e4ad0-8c68-47b2-a5e5-1e98ef889e0b" />
     <Project Path="prism.web.service.grpc.Test/prism.web.service.grpc.Test.csproj" Id="604ce246-2635-49f6-be69-7d1390b53e10" />
     <Project Path="prism.web.service.Tests/prism.web.service.Tests.csproj" Id="b3679778-a955-441c-bf61-40925a0f9bd9" />
     <Project Path="prism.web.ui.Test/prism.web.ui.Test.csproj" Id="7dfa5cd2-861e-48d5-b523-481ac6d05d6f" />

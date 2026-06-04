@@ -63,8 +63,27 @@ namespace prism.web.service.Model
             var json = JsonNode.Parse(data);
             var projectName = json["projectName"]?.GetValue<string>();
             var testJobName = json["testJobName"]?.GetValue<string>();
+            var buildGuid = json["buildGuid"]?.GetValue<string>();
+            if (projectName == null || testJobName == null || buildGuid == null)
+            {
+                throw new Exception("The fields, project name, test job name or guid is null.");
+            }
+
             var collectionName = $@"{projectName}.{testJobName}.{collectionTrailName}";
-            return await Add(collectionName, data);
+            var collection = _database.GetCollection<BsonDocument>(collectionName);
+            var filter = new { buildGuid }.ToBsonDocument();
+            var result = collection.Find(filter).FirstOrDefault();
+            if(result == null)
+            {
+                return await Add(collectionName, data);
+            }
+            else
+            {
+                //var updateFilter = Builders<BsonDocument>.Filter.Eq("buildGuid", buildGuid);
+                var bsonData = BsonDocument.Parse(data);
+                var replaced = await collection.ReplaceOneAsync(filter, bsonData, new ReplaceOptions { IsUpsert = true });
+                return replaced.IsAcknowledged;
+            }
         }
 
         protected async Task<List<BsonDocument>> Get(string collectionName, string filter)
@@ -83,6 +102,11 @@ namespace prism.web.service.Model
             var json = JsonNode.Parse(filter);
             var projectName = json["projectName"]?.GetValue<string>();
             var testJobName = json["testJobName"]?.GetValue<string>();
+            var buildGuid = json["buildGuid"]?.GetValue<string>();
+            if (projectName == null || testJobName == null || buildGuid == null)
+            {
+                throw new Exception("The fields, project name, test job name or guid is null.");
+            }
             var collectionName = $@"{projectName}.{testJobName}.{collectionTrailName}";
             return await Get(collectionName, filter);
         }
@@ -104,6 +128,11 @@ namespace prism.web.service.Model
             var json = JsonNode.Parse(filter);
             var projectName = json["projectName"]?.GetValue<string>();
             var testJobName = json["testJobName"]?.GetValue<string>();
+            var buildGuid = json["buildGuid"]?.GetValue<string>();
+            if (projectName == null || testJobName == null || buildGuid == null)
+            {
+                throw new Exception("The fields, project name, test job name or guid is null.");
+            }
             var collectionName = $@"{projectName}.{testJobName}.{collectionTrailName}";
             return await Delete(collectionName, filter);
         }
@@ -121,13 +150,29 @@ namespace prism.web.service.Model
             return result.IsAcknowledged;
         }
 
+        protected async Task<bool> Update(string collectionName, BsonDocument filter, string update)
+        {
+            var collection = _database.GetCollection<BsonDocument>(collectionName);
+            if (collection == null)
+            {
+                return false;
+            }
+            var bsonUpdate = BsonDocument.Parse(update);
+            var result = await collection.UpdateManyAsync(filter, bsonUpdate);
+            return result.IsAcknowledged;
+        }
+
         protected async Task<bool> Updateex(string collectionTrailName, string filter, string update)
         {
             var json = JsonNode.Parse(filter);
             var projectName = json["projectName"]?.GetValue<string>();
             var testJobName = json["testJobName"]?.GetValue<string>();
-            var guid = json["guid"]?.GetValue<string>();
-            filter = $"{{ \"guid\": \"{guid}\" }}";
+            var buildGuid = json["buildGuid"]?.GetValue<string>();
+            if (projectName == null || testJobName == null || buildGuid == null)
+            {
+                throw new Exception("The fields, project name, test job name or guid is null.");
+            }
+            filter = $"{{ \"guid\": \"{buildGuid}\" }}";
             var collectionName = $@"{projectName}.{testJobName}.{collectionTrailName}";
             return await Update(collectionName, filter, update);
         }
@@ -148,17 +193,17 @@ namespace prism.web.service.Model
             return (await Task.WhenAll(result)).All(r => r);
         }
 
-        public async Task<bool> AddMetaData(string metadata)
+        public async Task<bool> AddMetadata(string metadata)
         {
-            return await Addex("MetaDatas", metadata);
+            return await Addex("Metadata", metadata);
         }
 
-        public async Task<bool> AddMetaDatas(List<string> metadatas)
+        public async Task<bool> AddMetadata(List<string> metadata)
         {
             List<Task<bool>> result = new List<Task<bool>>();
-            foreach (var metadata in metadatas)
+            foreach (var md in metadata)
             {
-                result.Add(AddMetaData(metadata));
+                result.Add(AddMetadata(md));
             }
             return (await Task.WhenAll(result)).All(r => r);
         }
@@ -205,12 +250,12 @@ namespace prism.web.service.Model
             throw new NotImplementedException();
         }
 
-        public async Task<bool> DeleteMetaData(string metadata)
+        public async Task<bool> DeleteMetadata(string metadata)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> DeleteMetaDatas(List<string> metadatas)
+        public async Task<bool> DeleteMetadata(List<string> metadata)
         {
             throw new NotImplementedException();
         }
@@ -252,19 +297,19 @@ namespace prism.web.service.Model
             return await Getex("Environments", environment).ContinueWith(t => t.Result.FirstOrDefault()?.ToJson());
         }
 
-        public async Task<bool> GetEnvironments(List<string> environments)
+        public async Task<string> GetEnvironments(List<string> environments)
         {
-            return await Task.WhenAll(environments.Select(e => GetEnvironment(e).ContinueWith(t => t.Result != null))).ContinueWith(t => t.Result.All(r => r));
+            return await Task.WhenAll(environments.Select(e => GetEnvironment(e))).ContinueWith(t => t.Result.ToJson());
         }
 
-        public async Task<string> GetMetaData(string metadata)
+        public async Task<string> GetMetadata(string metadata)
         {
-            return await Getex("MetaDatas", metadata).ContinueWith(t => t.Result.FirstOrDefault()?.ToJson());
+            return await Getex("Metadata", metadata).ContinueWith(t => t.Result.FirstOrDefault()?.ToJson());
         }
 
-        public async Task<bool> GetMetaDatas(List<string> metadatas)
+        public async Task<string> GetMetadata(List<string> metadata)
         {
-            return await Task.WhenAll(metadatas.Select(m => GetMetaData(m).ContinueWith(t => t.Result != null))).ContinueWith(t => t.Result.All(r => r));
+            return await Task.WhenAll(metadata.Select(m => GetMetadata(m))).ContinueWith(t => t.Result.ToJson());
         }
 
         public async Task<string> GetParameter(string parameter)
@@ -272,9 +317,9 @@ namespace prism.web.service.Model
             return await Getex("Parameters", parameter).ContinueWith(t => t.Result.FirstOrDefault()?.ToJson());
         }
 
-        public async Task<bool> GetParameters(List<string> parameters)
+        public async Task<string> GetParameters(List<string> parameters)
         {
-            return await Task.WhenAll(parameters.Select(p => GetParameter(p).ContinueWith(t => t.Result != null))).ContinueWith(t => t.Result.All(r => r));
+            return await Task.WhenAll(parameters.Select(p => GetParameter(p))).ContinueWith(t => t.Result.ToJson());
         }
 
         public async Task<string> GetResult(string result)
@@ -282,9 +327,9 @@ namespace prism.web.service.Model
             return await Getex("Results", result).ContinueWith(t => t.Result.FirstOrDefault()?.ToJson());
         }
 
-        public async Task<bool> GetResults(List<string> results)
+        public async Task<string> GetResults(List<string> results)
         {
-            return await Task.WhenAll(results.Select(r => GetResult(r).ContinueWith(t => t.Result != null))).ContinueWith(t => t.Result.All(r => r));
+            return await Task.WhenAll(results.Select(r => GetResult(r))).ContinueWith(t => t.Result.ToJson());
         }
 
         #endregion Get
@@ -312,14 +357,14 @@ namespace prism.web.service.Model
             return await Task.WhenAll(environments.Select(e => UpdateEnvironment(e))).ContinueWith(t => t.Result.All(r => r));
         }
 
-        public async Task<bool> UpdateMetaData(string metadata)
+        public async Task<bool> UpdateMetadata(string metadata)
         {
-            return await Updateex("MetaDatas", metadata, metadata);
+            return await Updateex("Metadata", metadata, metadata);
         }
 
-        public async Task<bool> UpdateMetadatas(List<string> metadatas)
+        public async Task<bool> UpdateMetadata(List<string> metadata)
         {
-            return await Task.WhenAll(metadatas.Select(m => UpdateMetaData(m))).ContinueWith(t => t.Result.All(r => r));
+            return await Task.WhenAll(metadata.Select(m => UpdateMetadata(m))).ContinueWith(t => t.Result.All(r => r));
         }
 
         public async Task<bool> UpdateParameter(string parameter)

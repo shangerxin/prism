@@ -7,7 +7,7 @@ using System.Web.Http;
 
 namespace prism.web.service.Controller
 {
-    public class DashboardController : PrismControllerBase
+    public class DashboardController : PrismControllerBase<Object>
     {
         // GET: api/v{apiVersion}/Dashboard
         public IEnumerable<string> Get()
@@ -34,6 +34,11 @@ namespace prism.web.service.Controller
         // DELETE: api/v{apiVersion}/Dashboard/5
         public void Delete(int id)
         {
+        }
+
+        protected override object ToSerizalizable(object x)
+        {
+            throw new NotImplementedException();
         }
     }
 }
