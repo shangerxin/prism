@@ -15,19 +15,21 @@ namespace prism.web.service.Controller
         {
         }
 
-        public List<Project> Get() {
+        public string Get() {
             using (managementDb)
             {
-                return managementDb.Projects.ToList();
+                var projects = managementDb.Projects.ToList();
+                return JsonSerializer.Serialize(projects.Select(p => ToSerizalizable(p)));
             }
         }
 
         // GET: api/v{apiVersion}/Project/5
-        public Project Get(int id)
+        public string Get(int id)
         {
             using (managementDb)
             {
-                return managementDb.Projects.Where(p => p.id == id).FirstOrDefault();
+                var project = managementDb.Projects.Where(p => p.id == id).FirstOrDefault();
+                return Serizalize(project);
             }
         }
 

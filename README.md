@@ -11,6 +11,9 @@
 7. Install XMind 8+ Optinal
 
 
+# Development
+1. Launch the solution with project prism.web.service
+2. Navigate to http://localhost:/44303/swagger to get the Swagger web API UI
 
 
 # ToDo:
