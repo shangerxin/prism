@@ -1,9 +1,11 @@
 ﻿using prism.model.Model;
+using prism.web.service.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -35,7 +37,8 @@ namespace prism.web.service.Controller
             var testJobName = json["testJobName"]?.GetValue<string>();
             var buildGuid = json["buildGuid"]?.GetValue<string>();
             var dataInfo = json["dataInfo"]?.GetValue<string>();
-            var isValidData = json["data"] is JsonObject;
+            var data = json["data"];
+            var isValidData = data is JsonObject || data is JsonValue || data is JsonArray;
             if (projectName == null || testJobName == null || buildGuid == null || dataInfo == null || !isValidData)
             {
                 throw new Exception("The fields, project name, test job name, buildGuid, dataInfo or data are null.");
@@ -112,6 +115,15 @@ namespace prism.web.service.Controller
             var json = parseResult(data);
             var projectName = json["projectName"].GetValue<string>();
             var testJobName = json["testJobName"].GetValue<string>();
+            var buildGuid = json["buildGuid"].GetValue<string>();
+            Guid.TryParse(buildGuid, out Guid parsedGuid);
+            var buildResult = json["buildResult"]?.GetValue<string>();
+            var testResult = json["testResult"]?.GetValue<string>();
+            Enum.TryParse<ResultTypes>(buildResult, out ResultTypes buildResultType);
+            Enum.TryParse<ResultTypes>(testResult, out ResultTypes testResultType);
+            var startTime = json["start"]?.GetValue<DateTime>();
+            var endTime = json["end"]?.GetValue<DateTime>();
+            var timeoutHours = json["end"]?.GetValue<int>()?? 0;
             using (managementDb)
             {
                 var testJob = (from job in managementDb.TestJobs
@@ -128,6 +140,26 @@ namespace prism.web.service.Controller
                     {
                         name = testJobName,
                         projectId = projectId
+                    });
+                    managementDb.SaveChanges();
+                }
+                var testBuild = (from build in managementDb.TestBuilds
+                                 where build.testJobId == testJob.id &&
+                                       build.guid == parsedGuid
+                                 select build).FirstOrDefault();
+                if (testBuild == null)
+                {
+                    managementDb.TestBuilds.Add(new TestBuild
+                    {
+                        testJobId = testJob.id,
+                        timestamp = startTime ?? DateTime.Now,
+                        buildResultId = (int)buildResultType,
+                        testResultId = (int)testResultType,
+                        guid = parsedGuid,
+                        startTime = startTime,
+                        endTime = endTime,
+                        timeoutHours = timeoutHours
+
                     });
                     managementDb.SaveChanges();
                 }
@@ -164,6 +196,27 @@ namespace prism.web.service.Controller
         public async Task<bool> AddMetadata([FromBody] string metadata)
         {
             return await Add(metadata, m => resultDb.AddMetadata(m));
+        }
+
+        [HttpPost]
+        [Route(ServiceHelper.ApiPrefix + "/TestResult/CompareResults/")]
+        public async Task<string> CompareResults([FromBody] string results)
+        {
+            var json = JsonNode.Parse(results);
+            var current = json["currentResult"].GetValue<string>();
+            var compare = json["compareResult"].GetValue<string>();
+            var reference = json["referenceResult"].GetValue<string>();
+            return "";
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/TestResult/CompareResults/")]
+        public async Task<string> CompareResults(string projectName, string testJobName, string dataInfo, string currentBuildGuid, string compareBuildGuid, string referenceBuildGuid)
+        {
+            var current = GetResult(projectName, testJobName, currentBuildGuid, dataInfo);
+            var compare = GetResult(projectName, testJobName, compareBuildGuid, dataInfo);
+            var reference = GetResult(projectName, testJobName, referenceBuildGuid, dataInfo);
+            return "";
         }
 
 

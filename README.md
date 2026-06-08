@@ -22,6 +22,7 @@
 3. Test the web API with Swagger UI or Postman
 4. Test the web API with Chrome Extension Talend API Tester with the test cases defined in
 Prism\prism.model.Test\Fixtures\prism-test-requests.json
+5. Use webconfig. catalog=TestManagementDBTest; to control which database to connect. Remvoe the trail test for production.
 
 # ToDo:
 1. Add postsharp log C:\Users\erxinsha\BookNotes\Aspect orientated programming in .net=Donald Belcham;Note=Erxin.txt

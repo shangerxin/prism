@@ -1,4 +1,4 @@
-﻿use TestManagementDB;
+﻿use TestManagementDBTest;
 
 DBCC CHECKIDENT ('ResultType', RESEED, 0);
 DBCC CHECKIDENT ('Project', RESEED, 0);

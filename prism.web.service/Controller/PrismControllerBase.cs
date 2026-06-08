@@ -36,6 +36,7 @@ namespace prism.web.service.Controller
 
         protected string Serizalize(T x)
         {
+            if(x == null) return null;
             return JsonSerializer.Serialize(ToSerizalizable(x));
         }
 }
