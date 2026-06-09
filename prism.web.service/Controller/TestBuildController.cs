@@ -9,6 +9,7 @@ using System.Text.Json;
 using prism.model.Model;
 using prism.web.service.Model;
 using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
+using System.Threading.Tasks;
 
 namespace prism.web.service.Controller
 {
@@ -92,7 +93,7 @@ namespace prism.web.service.Controller
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}")]
-        public string LastSuccess(string testJobName)
+        public async Task<HttpResponseMessage> LastSuccess(string testJobName)
         {
             using (managementDb)
             {
@@ -102,13 +103,13 @@ namespace prism.web.service.Controller
                                    where testJobId == testBuild.testJobId && testBuild.buildResultId == (int)ResultTypes.Pass
                                    orderby testBuild.timestamp descending 
                                    select testBuild).FirstOrDefault();
-                return Serizalize(lastSuccess);
+                return toResponse(Serizalize(lastSuccess));
             }
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}/{testResultType}")]
-        public string Last(string testJobName, string testResultType)
+        public async Task<HttpResponseMessage> Last(string testJobName, string testResultType)
         {
             using (managementDb)
             {
@@ -119,13 +120,13 @@ namespace prism.web.service.Controller
                             where testJobId == testBuild.testJobId && testBuild.testResultId == resultType.id
                             orderby testBuild.timestamp descending
                             select testBuild).FirstOrDefault();
-                return Serizalize(last);
+                return toResponse(Serizalize(last));
             }
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/BuildList/{testJobName}/{start}/{end}")]
-        public string BuildList(string testJobName, DateTime start, DateTime end)
+        public async Task<HttpResponseMessage> BuildList(string testJobName, DateTime start, DateTime end)
         {
             using (managementDb)
             {
@@ -135,7 +136,7 @@ namespace prism.web.service.Controller
                                  where testBuild.testJobId == testJobId && testBuild.timestamp >= start && testBuild.timestamp <= end
                                  orderby testBuild.timestamp
                                  select testBuild).ToList();
-                return JsonSerializer.Serialize(buildList.Select(t => ToSerizalizable(t)));
+                return toResponse(JsonSerializer.Serialize(buildList.Select(t => ToSerizalizable(t))));
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using prism.model.Model;
+﻿using MongoDB.Bson;
+using prism.model.Model;
 using prism.web.service.Model;
 using System;
 using System.Collections.Generic;
@@ -48,49 +49,80 @@ namespace prism.web.service.Controller
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestResult/{projectName}/{testJobName}/{buildGuid}/{dataInfo}")]
-        public async Task<string> GetResult(string projectName, string testJobName, string buildGuid, string dataInfo)
+        public async Task<HttpResponseMessage> GetResult(string projectName, string testJobName, string buildGuid, string dataInfo)
         {
             using (resultDb)
             {
                 var filterJson = JsonSerializer.Serialize(new { projectName, testJobName, buildGuid, dataInfo });
                 var result = await resultDb.GetResult(filterJson);
 
-                return result;
+                return toResponse(result);
             }
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestResult/Environment/{projectName}/{testJobName}/{buildGuid}/{dataInfo}")]
-        public async Task<string> GetEnvironment(string projectName, string testJobName, string buildGuid, string dataInfo)
+        public async Task<HttpResponseMessage> GetEnvironment(string projectName, string testJobName, string buildGuid, string dataInfo)
         {
             using (resultDb)
             {
                 var filterJson = JsonSerializer.Serialize(new { projectName, testJobName, buildGuid, dataInfo });
                 var environment = await resultDb.GetEnvironment(filterJson);
-                return environment;
+                return toResponse(environment);
+            }
+        }
+
+        public async Task<List<BsonDocument>> GetEnvironments(string projectName, string testJobName, List<string> buildGuids, string dataInfo)
+        {
+            using (resultDb)
+            {
+                var filterJson = buildGuids.Select(buildGuid => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid, dataInfo })).ToList();
+                var environments = await resultDb.GetBsonEnvironments(filterJson);
+                return environments;
             }
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestResult/Parameter/{projectName}/{testJobName}/{buildGuid}/{dataInfo}")]
-        public async Task<string> GetParameter(string projectName, string testJobName, string buildGuid, string dataInfo)
+        public async Task<HttpResponseMessage> GetParameter(string projectName, string testJobName, string buildGuid, string dataInfo)
         {
             using (resultDb)
             {
                 var filterJson = JsonSerializer.Serialize(new { projectName, testJobName, buildGuid, dataInfo });
                 var parameter = await resultDb.GetParameter(filterJson);
-                return parameter;
+                return toResponse(parameter);
             }
         }
 
+        public async Task<List<BsonDocument>> GetParameters(string projectName, string testJobName, List<string> buildGuids, string dataInfo)
+        {
+            using (resultDb)
+            {
+                var filterJson = buildGuids.Select(buildGuid => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid, dataInfo })).ToList();
+                var parameters = await resultDb.GetBsonParameters(filterJson);
+                return parameters;
+            }
+        }
+
+
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestResult/Metadata/{projectName}/{testJobName}/{buildGuid}/{dataInfo}")]
-        public async Task<string> GetMetadata(string projectName, string testJobName, string buildGuid, string dataInfo)
+        public async Task<HttpResponseMessage> GetMetadata(string projectName, string testJobName, string buildGuid, string dataInfo)
         {
             using (resultDb)
             {
                 var filterJson = JsonSerializer.Serialize(new { projectName, testJobName, buildGuid, dataInfo });
-                var metadata = await resultDb.GetMetadata(filterJson);
+                var metadata = await resultDb.GetBsonMetadata(new List<string> { filterJson });
+                return toResponse(metadata.ToJson());
+            }
+        }
+
+        public async Task<List<BsonDocument>> GetMetadata(string projectName, string testJobName, List<string> buildGuids, string dataInfo)
+        {
+            using (resultDb)
+            {
+                var filterJson = buildGuids.Select(buildGuid => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid, dataInfo })).ToList();
+                var metadata = await resultDb.GetBsonMetadata(filterJson);
                 return metadata;
             }
         }
@@ -98,7 +130,7 @@ namespace prism.web.service.Controller
         [HttpPost]
         [Route(ServiceHelper.ApiPrefix + "/TestResult/GetResults/")]
 
-        public async Task<string> GetResults([FromBody] string query)
+        public async Task<HttpResponseMessage> GetResults([FromBody] string query)
         {
             var json = parseQuery(query);
             var projectName = json["projectName"].GetValue<string>();
@@ -106,8 +138,17 @@ namespace prism.web.service.Controller
             var buildGuids = json["buildGuids"].GetValue<List<string>>();
             var dataInfo = json["dataInfo"].GetValue<string>();
             var queries = buildGuids.Select(x => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid = x, dataInfo})).ToList<string>();
-            return await resultDb.GetResults(queries);
+            var results = await resultDb.GetBsonResults(queries);
+            return toResponse(results.ToJson());
         }
+
+        public async Task<List<BsonDocument>> GetResults(string projectName, string testJobName, List<string> buildGuids, string dataInfo)
+        {
+            var queries = buildGuids.Select(x => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid = x, dataInfo })).ToList<string>();
+            var results = await resultDb.GetBsonResults(queries);
+            return results;
+        }
+
 
         public async Task<bool> Add(string data, Func<string, Task<bool>> AddImp)
         {
@@ -128,19 +169,20 @@ namespace prism.web.service.Controller
             {
                 var testJob = (from job in managementDb.TestJobs
                                where job.Project != null &&
-                                     job.Project.name == projectName &&
+                                     job.Project.name.Trim() == projectName &&
                                      job.name == testJobName
                                select job).FirstOrDefault();
                 if (testJob == null)
                 {
                     var projectId = (from project in managementDb.Projects
-                                     where project.name == projectName
+                                     where project.name.Trim() == projectName
                                      select project).FirstOrDefault()?.id ?? null;
-                    managementDb.TestJobs.Add(new TestJob
+                    testJob = new TestJob
                     {
                         name = testJobName,
                         projectId = projectId
-                    });
+                    };
+                    managementDb.TestJobs.Add(testJob);
                     managementDb.SaveChanges();
                 }
                 var testBuild = (from build in managementDb.TestBuilds
@@ -149,7 +191,7 @@ namespace prism.web.service.Controller
                                  select build).FirstOrDefault();
                 if (testBuild == null)
                 {
-                    managementDb.TestBuilds.Add(new TestBuild
+                    testBuild = new TestBuild
                     {
                         testJobId = testJob.id,
                         timestamp = startTime ?? DateTime.Now,
@@ -160,7 +202,8 @@ namespace prism.web.service.Controller
                         endTime = endTime,
                         timeoutHours = timeoutHours
 
-                    });
+                    };
+                    managementDb.TestBuilds.Add(testBuild);
                     managementDb.SaveChanges();
                 }
             }
@@ -200,23 +243,23 @@ namespace prism.web.service.Controller
 
         [HttpPost]
         [Route(ServiceHelper.ApiPrefix + "/TestResult/CompareResults/")]
-        public async Task<string> CompareResults([FromBody] string results)
+        public async Task<HttpResponseMessage> CompareResults([FromBody] string results)
         {
             var json = JsonNode.Parse(results);
             var current = json["currentResult"].GetValue<string>();
             var compare = json["compareResult"].GetValue<string>();
             var reference = json["referenceResult"].GetValue<string>();
-            return "";
+            throw new NotImplementedException();
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestResult/CompareResults/")]
-        public async Task<string> CompareResults(string projectName, string testJobName, string dataInfo, string currentBuildGuid, string compareBuildGuid, string referenceBuildGuid)
+        public async Task<HttpResponseMessage> CompareResults(string projectName, string testJobName, string dataInfo, string currentBuildGuid, string compareBuildGuid, string referenceBuildGuid)
         {
             var current = GetResult(projectName, testJobName, currentBuildGuid, dataInfo);
             var compare = GetResult(projectName, testJobName, compareBuildGuid, dataInfo);
             var reference = GetResult(projectName, testJobName, referenceBuildGuid, dataInfo);
-            return "";
+            throw new NotImplementedException();
         }
 
 

@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Web;
 using System.Web.Http;
@@ -39,5 +42,12 @@ namespace prism.web.service.Controller
             if(x == null) return null;
             return JsonSerializer.Serialize(ToSerizalizable(x));
         }
-}
+
+        protected HttpResponseMessage toResponse(string content, HttpStatusCode code = HttpStatusCode.OK, string metadataType="application/json")
+        {
+            var response = new HttpResponseMessage(code);
+            response.Content = new StringContent(content, Encoding.UTF8, metadataType);
+            return response;
+        }
+    }
 }

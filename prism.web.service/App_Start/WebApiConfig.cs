@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http.Formatting;
 using System.Web.Http;
 
 namespace prism.web.service
@@ -15,6 +16,7 @@ namespace prism.web.service
 
             // Web API routes
             config.MapHttpAttributeRoutes();
+            config.Formatters.Add(new BsonMediaTypeFormatter());
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: $"api/v{apiVersion}/{{controller}}/{{id}}",

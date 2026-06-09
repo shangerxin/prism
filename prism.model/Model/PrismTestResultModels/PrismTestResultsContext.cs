@@ -1,15 +1,16 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using prism.infra.Model;
+using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;
-using prism.infra.Model;
-using System.Text.Json;
-
-using MongoDB.Bson;
-using MongoDB.Driver;
-using System.Diagnostics;
-using System.Text.Json.Nodes;
+using System.Xml.Linq;
 
 namespace prism.web.service.Model
 {
@@ -299,7 +300,12 @@ namespace prism.web.service.Model
 
         public async Task<string> GetEnvironments(List<string> environments)
         {
-            return await Task.WhenAll(environments.Select(e => GetEnvironment(e))).ContinueWith(t => t.Result.ToJson());
+            return await Task.WhenAll(environments.Select(async e => (await Getex("Environments", e)).FirstOrDefault())).ContinueWith(t => t.Result.ToJson());
+        }
+
+        public async Task<List<BsonDocument>> GetBsonEnvironments(List<string> environments)
+        {
+            return await Task.WhenAll(environments.Select(async e => (await Getex("Environments", e)).FirstOrDefault())).ContinueWith(t => t.Result.ToList());
         }
 
         public async Task<string> GetMetadata(string metadata)
@@ -309,7 +315,12 @@ namespace prism.web.service.Model
 
         public async Task<string> GetMetadata(List<string> metadata)
         {
-            return await Task.WhenAll(metadata.Select(m => GetMetadata(m))).ContinueWith(t => t.Result.ToJson());
+            return await Task.WhenAll(metadata.Select(async m => (await Getex("Metadata", m)).FirstOrDefault())).ContinueWith(t => t.Result.ToJson());
+        }
+
+        public async Task<List<BsonDocument>> GetBsonMetadata(List<string> metadata)
+        {
+            return await Task.WhenAll(metadata.Select(async m => (await Getex("Metadata", m)).FirstOrDefault())).ContinueWith(t => t.Result.ToList());
         }
 
         public async Task<string> GetParameter(string parameter)
@@ -319,7 +330,12 @@ namespace prism.web.service.Model
 
         public async Task<string> GetParameters(List<string> parameters)
         {
-            return await Task.WhenAll(parameters.Select(p => GetParameter(p))).ContinueWith(t => t.Result.ToJson());
+            return await Task.WhenAll(parameters.Select(async p => (await Getex("Parameters", p)).FirstOrDefault())).ContinueWith(t => t.Result.ToJson());
+        }
+
+        public async Task<List<BsonDocument>> GetBsonParameters(List<string> parameters)
+        {
+            return await Task.WhenAll(parameters.Select(async p => (await Getex("Parameters", p)).FirstOrDefault())).ContinueWith(t => t.Result.ToList());
         }
 
         public async Task<string> GetResult(string result)
@@ -329,7 +345,12 @@ namespace prism.web.service.Model
 
         public async Task<string> GetResults(List<string> results)
         {
-            return await Task.WhenAll(results.Select(r => GetResult(r))).ContinueWith(t => t.Result.ToJson());
+            return await Task.WhenAll(results.Select(async r => (await Getex("Results", r)).FirstOrDefault())).ContinueWith(t => t.Result.ToJson());
+        }
+
+        public async Task<List<BsonDocument>> GetBsonResults(List<string> results)
+        {
+            return await Task.WhenAll(results.Select(async r => (await Getex("Results", r)).FirstOrDefault())).ContinueWith(t => t.Result.ToList());
         }
 
         #endregion Get
