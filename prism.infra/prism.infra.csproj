@@ -45,6 +45,7 @@
     <Compile Include="Model\IPrismTestResultsContext.cs" />
     <Compile Include="PrismObjectBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebAPI\QueryModelBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

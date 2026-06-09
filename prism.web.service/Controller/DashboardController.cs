@@ -1,6 +1,8 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
+using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
+using prism.model;
 using prism.web.service.Model;
 using System;
 using System.Collections.Generic;
@@ -11,8 +13,10 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Results;
 using System.Web.UI.WebControls;
 
 namespace prism.web.service.Controller
@@ -56,7 +60,7 @@ namespace prism.web.service.Controller
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/{resultType}")]
-        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, string selectColumns)
+        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType)
         {
             using (managementDb)
             {
@@ -64,27 +68,64 @@ namespace prism.web.service.Controller
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName && build.testResultId == (int) testResultType
                                   orderby build.timestamp descending
-                                  select build.guid).Take(count).ToList();
+                                  select new { build.guid, build.timestamp }).Take(count).ToList();
                 var testResultController = new TestResultController();
-                
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
+
+                var results = await testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.guid.ToString()).ToList(), dataInfo);
                 return toResponse(results.ToJson());
             }
         }
 
-        // POST: api/v{apiVersion}/Dashboard
-        public void Post([FromBody]string value)
+        [HttpPost]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/{resultType}")]
+        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, [FromBody] ResultQueryModel query)
         {
-        }
+            using (managementDb)
+            {
+                Enum.TryParse<ResultTypes>(resultType, out ResultTypes testResultType);
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName && build.testResultId == (int)testResultType
+                                  orderby build.timestamp descending
+                                  select build.guid).Take(count).ToList();
+                var testResultController = new TestResultController();
 
-        // PUT: api/v{apiVersion}/Dashboard/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
+                var results = await testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
+                var colummns = (from column in query.SelectColumns
+                 select new
+                 {
+                     Column = column,
+                     Values = (from result in results
+                               where result != null && result.GetValue(column, null) != null
+                               select result.GetValue(column)).ToList()
+                 });
+                    
+                //query.GroupResultsWithColumnValues.ForEach((group) =>
+                //{
+                //    var columnKey = group.Key;
+                //    var values = group.Value;
+                //    if (colummns.Any(x => x.Column == columnKey))
+                //    {
+                //        var columnValues = colummns.First(x => x.Column == columnKey).Values;
+                //        values.ForEach(value =>
+                //        {
+                //            if (!columnValues.Contains(value))
+                //            {
+                //                columnValues.Add(value);
+                //            }
+                //        });
+                //    }
+                //    else
+                //    {
+                //        colummns = colummns.Append(new
+                //        {
+                //            Column = columnKey,
+                //            Values = values
+                //        });
+                //    }
+                //});
 
-        // DELETE: api/v{apiVersion}/Dashboard/5
-        public void Delete(int id)
-        {
+                return toResponse(colummns.ToJson());
+            }
         }
 
         protected override object ToSerizalizable(object x)

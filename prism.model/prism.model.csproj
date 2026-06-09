@@ -262,6 +262,7 @@
       <DependentUpon>PrismTestManagementModels.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Model\WebAPI\ResultQueryModel.cs" />
     <Compile Include="Script\ResultTypes.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
