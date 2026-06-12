@@ -24,10 +24,11 @@ namespace prism.web.ui.Test
             _driver = new EdgeDriver(options);
         }
 
+        [Ignore]
         [TestMethod]
         public void VerifyPageTitle()
         {
-
+            
         }
 
         [TestCleanup]

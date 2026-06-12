@@ -296,6 +296,7 @@
   <ItemGroup>
     <Content Include="Content\Site.css" />
     <Content Include="Global.asax" />
+    <Content Include="Script\requirements.txt" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -315,6 +316,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <Content Include="Script\column_geo_mean.py" />
+    <Content Include="Script\gen_compare_result.py" />
+    <Content Include="Script\sendmail.py" />
+    <Content Include="Script\utils.py" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

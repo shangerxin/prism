@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enum\TimeInfoTypes.cs" />
+    <Compile Include="Helper\Calculator.cs" />
     <Compile Include="IoC.cs" />
     <Compile Include="Model\IPrismTestResultsContext.cs" />
     <Compile Include="PrismObjectBase.cs" />
