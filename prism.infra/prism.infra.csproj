@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enum\TimeInfoTypes.cs" />
+    <Compile Include="Extension\DateTimeExtensions.cs" />
     <Compile Include="Helper\Calculator.cs" />
     <Compile Include="IoC.cs" />
     <Compile Include="Model\IPrismTestResultsContext.cs" />
