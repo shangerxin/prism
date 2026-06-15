@@ -1,4 +1,4 @@
-using prism.infra.Extend;
+using prism.infra.Extension;
 
 namespace prism.infra.Test;
 

@@ -10,6 +10,7 @@ namespace prism.model
     public class ResultQueryModel: QueryModelBase
     {
         public ICollection<string> SelectColumns { get; set; }
-        public IDictionary<string, List<string>> GroupResultsWithColumnValues {  get; set; }
+        public IDictionary<string, List<string>> ColummRowsWithValues {  get; set; }
+
     }
 }

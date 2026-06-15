@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace prism.infra.Extend
+namespace prism.infra.Extension
 {
     public static class DateTimeExtensions
     {

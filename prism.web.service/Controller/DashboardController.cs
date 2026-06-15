@@ -3,6 +3,8 @@ using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using prism.infra.Enum;
+using prism.infra.Extension;
+using prism.infra.Helper;
 using prism.model;
 using prism.web.service.Model;
 using System;
@@ -26,6 +28,117 @@ namespace prism.web.service.Controller
     public class DashboardController : PrismControllerBase<Object>
     {
         [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomean/{projectName}/{testJobName}/{dataInfo}/{columnNammes}/{start}/{end}")]
+        public async Task<HttpResponseMessage> GetGeomean(string projectName, string testJobName, string dataInfo, string columnNames, DateTime start, DateTime end)
+        {
+            List<string> names = columnNames.SplitToList();
+            using (managementDb)
+            {
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName &&
+                                  build.startTime >= start && build.endTime <= end
+                                  orderby build.startTime
+                                  select build.guid.ToString()).ToList();
+                var testResultController = new TestResultController();
+                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                CalculateGeomean(results, names);
+                return toResponse(results.ToJson());
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomean/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetLastGeomean(string projectName, string testJobName, string dataInfo, string columnNames)
+        {
+            List<string> names = columnNames.SplitToList();
+            using (managementDb)
+            {
+                var buildGuid = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName
+                                  orderby build.startTime descending
+                                  select build.guid.ToString()).FirstOrDefault();
+                var testResultController = new TestResultController();
+                var results = await testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
+                CalculateGeomean(results, names);
+                return toResponse(results.ToJson());
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomean/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetGeomean(string projectName, string testJobName, string dataInfo, int count, string columnNames)
+        {
+            List<string> names = columnNames.SplitToList();
+            using (managementDb)
+            {
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName
+                                  orderby build.startTime
+                                  select build.guid.ToString()).Take(count).ToList();
+                var testResultController = new TestResultController();
+                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                CalculateGeomean(results, names);
+                return toResponse(results.ToJson());
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrate/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetPassrate(string projectName, string testJobName, string dataInfo, string columnNames, DateTime start, DateTime end)
+        {
+            List<string> names = columnNames.SplitToList();
+            using (managementDb)
+            {
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName &&
+                                  build.startTime >= start && build.endTime <= end
+                                  orderby build.startTime
+                                  select build.guid.ToString()).ToList();
+                var testResultController = new TestResultController();
+                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                CalculatePassrate(results, names);
+                return toResponse(results.ToJson());
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrate/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetLastPassrate(string projectName, string testJobName, string dataInfo, string columnNames)
+        {
+            List<string> names = columnNames.SplitToList();
+            using (managementDb)
+            {
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName 
+                                  orderby build.startTime descending
+                                  select build.guid.ToString()).ToList();
+                var testResultController = new TestResultController();
+                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                CalculatePassrate(results, names);
+                return toResponse(results.ToJson());
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrate/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetLastPassrate(string projectName, string testJobName, string dataInfo, int count, string columnNames)
+        {
+            List<string> names = columnNames.SplitToList();
+            using (managementDb)
+            {
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName
+                                  orderby build.startTime
+                                  select build.guid.ToString()).Take(count).ToList();
+                var testResultController = new TestResultController();
+                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                CalculatePassrate(results, names);
+                return toResponse(results.ToJson());
+            }
+        }
+
+
+        [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}")]
         public async Task<HttpResponseMessage> GetResults(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end)
         {
@@ -42,7 +155,6 @@ namespace prism.web.service.Controller
             }
         }
 
-
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/")]
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count)
@@ -58,7 +170,6 @@ namespace prism.web.service.Controller
                 return toResponse(results.ToJson());
             }
         }
-
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{resultType}/{count}/")]
@@ -116,6 +227,40 @@ namespace prism.web.service.Controller
                     value["__timestamp__"] = cache[r["buildGuid"].AsString];
                 });
             });
+        }
+
+        private void CalculateGeomean(List<BsonDocument> results, List<string> colummnNames)
+        {
+            foreach (var result in results)
+            {
+                result["__geomean__"] = new BsonDocument { };
+                var dataArray = result["data"].AsBsonArray;
+                foreach (var columnName in colummnNames)
+                {
+                    var values = dataArray.Select(d => String.IsNullOrWhiteSpace(d[columnName].ToString()) ? 0.0 : d[columnName].ToDouble());
+                    var geomean = Calculator.Geomean(values.ToArray());
+
+                    result["__geomean__"][columnName] = geomean;
+                }
+            }
+        }
+
+        private void CalculatePassrate(List<BsonDocument> results, List<string> columnNames)
+        {
+            foreach (var result in results)
+            {
+                result["__passrate__"] = new BsonDocument { };
+                var dataArray = result["data"].AsBsonArray;
+                foreach (var columnName in columnNames)
+                {
+                    var failedCount = dataArray.Count(d => {
+                        var value = d[columnName].AsString;
+                        return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
+                        });
+                    var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
+                    result["__passrate__"][columnName] = passrate;
+                }
+            }
         }
 
         [HttpGet]
@@ -181,7 +326,6 @@ namespace prism.web.service.Controller
                 throw new NotImplementedException();
             }
         }
-
 
         protected override object ToSerizalizable(object x)
         {
