@@ -28,8 +28,8 @@ namespace prism.web.service.Controller
     public class DashboardController : PrismControllerBase<Object>
     {
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomean/{projectName}/{testJobName}/{dataInfo}/{columnNammes}/{start}/{end}")]
-        public async Task<HttpResponseMessage> GetGeomean(string projectName, string testJobName, string dataInfo, string columnNames, DateTime start, DateTime end)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomean/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetGeomean(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -73,7 +73,7 @@ namespace prism.web.service.Controller
             {
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName
-                                  orderby build.startTime
+                                  orderby build.startTime descending
                                   select build.guid.ToString()).Take(count).ToList();
                 var testResultController = new TestResultController();
                 var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
@@ -83,8 +83,8 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrate/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetPassrate(string projectName, string testJobName, string dataInfo, string columnNames, DateTime start, DateTime end)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrate/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetPassrate(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -120,15 +120,15 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrate/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetLastPassrate(string projectName, string testJobName, string dataInfo, int count, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrate/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetPassrate(string projectName, string testJobName, string dataInfo, int count, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
             {
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName
-                                  orderby build.startTime
+                                  orderby build.startTime descending
                                   select build.guid.ToString()).Take(count).ToList();
                 var testResultController = new TestResultController();
                 var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
