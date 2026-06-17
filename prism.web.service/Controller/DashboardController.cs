@@ -10,6 +10,7 @@ using prism.web.service.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -28,9 +29,117 @@ namespace prism.web.service.Controller
 {
     public class DashboardController : PrismControllerBase<Object>
     {
+        #region Protected
+        protected class QueryResult
+        {
+            public Guid guid { get; set; }
+            public DateTime timestamp { get; set; }
+            public DateTime? startTime { get; set; }
+            public DateTime? endTime { get; set; }
+        }
+
+        protected void InsertTimeStamp(TimeInfoTypes timeInfo, IQueryable<QueryResult> buildInfo, List<BsonDocument> results)
+        {
+            string getTime(string guid)
+            {
+                var info = buildInfo.First(x => x.guid.ToString() == guid);
+                switch (timeInfo)
+                {
+                    case TimeInfoTypes.start:
+                        return info.startTime?.ToString("o");
+                    case TimeInfoTypes.end:
+                        return info.endTime?.ToString("o");
+                    case TimeInfoTypes.timestamp:
+                    default:
+                        return info.timestamp.ToString("o");
+                }
+            }
+
+            var cache = new Dictionary<string, string>();
+            foreach (var guid in buildInfo.Select(b => b.guid.ToString()))
+            {
+                cache.Add(guid, getTime(guid));
+            }
+
+            results.ForEach(r =>
+            {
+                r["data"].AsBsonArray.ForEach(value =>
+                {
+                    value["__timestamp__"] = cache[r["buildGuid"].AsString];
+                });
+            });
+        }
+
+        protected void CalculateGeomean(List<BsonDocument> results, List<string> colummnNames)
+        {
+            foreach (var result in results)
+            {
+                result["__geomean__"] = new BsonDocument();
+                var dataArray = result["data"].AsBsonArray;
+                foreach (var columnName in colummnNames)
+                {
+                    try
+                    {
+                        var values = dataArray.Select(d => String.IsNullOrWhiteSpace(d[columnName].ToString()) ? 0.0 : d[columnName].ToDouble());
+                        var item = new BsonDocument();
+                        var geomean = Calculator.Geomean(values.ToArray());
+                        result["__geomean__"][columnName] = geomean;
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine(ex);
+                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
+                        if (values.Count == 1)
+                        {
+                            result["__geomean__"][columnName] = values[0].ToString();
+                        }
+                        else
+                        {
+                            result["__geomean__"][columnName] = "N/A";
+                        }
+                    }
+                }
+            }
+        }
+
+        protected void CalculatePassrate(List<BsonDocument> results, List<string> columnNames)
+        {
+            foreach (var result in results)
+            {
+                result["__passrate__"] = new BsonDocument();
+                var dataArray = result["data"].AsBsonArray;
+                foreach (var columnName in columnNames)
+                {
+                    try
+                    {
+                        var failedCount = dataArray.Count(d => {
+                            var value = d[columnName].AsString;
+                            return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
+                        });
+                        var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
+                        result["__passrate__"][columnName] = passrate;
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine(ex);
+                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
+                        if (values.Count == 1)
+                        {
+                            result["__passrate__"][columnName] = values[0].ToString();
+                        }
+                        else
+                        {
+                            result["__passrate__"][columnName] = "N/A";
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomean/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetGeomean(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomeans/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetGeomeans(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -48,8 +157,8 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomean/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetLastGeomean(string projectName, string testJobName, string dataInfo, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomeans/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetLastGeomeans(string projectName, string testJobName, string dataInfo, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -66,8 +175,8 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomean/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetGeomean(string projectName, string testJobName, string dataInfo, int count, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomeans/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetLastGeomeans(string projectName, string testJobName, string dataInfo, int count, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -84,8 +193,8 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrate/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetPassrate(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrates/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetPassrates(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -103,8 +212,8 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrate/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetLastPassrate(string projectName, string testJobName, string dataInfo, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrates/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetLastPassrates(string projectName, string testJobName, string dataInfo, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -121,8 +230,8 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrate/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetPassrate(string projectName, string testJobName, string dataInfo, int count, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrates/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
+        public async Task<HttpResponseMessage> GetLastPassrates(string projectName, string testJobName, string dataInfo, int count, string columnNames)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -137,7 +246,6 @@ namespace prism.web.service.Controller
                 return toResponse(results.ToJson());
             }
         }
-
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}")]
@@ -190,110 +298,6 @@ namespace prism.web.service.Controller
             }
         }
 
-        private class QueryResult
-        {
-            public Guid guid { get; set; }
-            public DateTime timestamp { get; set; }
-            public DateTime? startTime { get; set; }
-            public DateTime? endTime { get; set; }
-        }
-
-        private void InsertTimeStamp(TimeInfoTypes timeInfo, IQueryable<QueryResult> buildInfo, List<BsonDocument> results)
-        {
-            string getTime(string guid)
-            {
-                var info = buildInfo.First(x => x.guid.ToString() == guid);
-                switch (timeInfo)
-                {
-                    case TimeInfoTypes.start:
-                        return info.startTime?.ToString("o");
-                    case TimeInfoTypes.end:
-                        return info.endTime?.ToString("o");
-                    case TimeInfoTypes.timestamp:
-                    default:
-                        return info.timestamp.ToString("o");
-                }
-            }
-
-            var cache = new Dictionary<string, string>();
-            foreach (var guid in buildInfo.Select(b => b.guid.ToString()))
-            {
-                cache.Add(guid, getTime(guid));
-            }
-
-            results.ForEach(r =>
-            {
-                r["data"].AsBsonArray.ForEach(value =>
-                {
-                    value["__timestamp__"] = cache[r["buildGuid"].AsString];
-                });
-            });
-        }
-
-        private void CalculateGeomean(List<BsonDocument> results, List<string> colummnNames)
-        {
-            foreach (var result in results)
-            {
-                result["__geomean__"] = new BsonDocument();
-                var dataArray = result["data"].AsBsonArray;
-                foreach (var columnName in colummnNames)
-                {
-                    try
-                    {
-                        var values = dataArray.Select(d => String.IsNullOrWhiteSpace(d[columnName].ToString()) ? 0.0 : d[columnName].ToDouble());
-                        var item = new BsonDocument();
-                        var geomean = Calculator.Geomean(values.ToArray());
-                        result["__geomean__"][columnName] = geomean;
-                    }
-                    catch (Exception ex) {
-                        Trace.WriteLine(ex);
-                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
-                        if(values.Count == 1)
-                        {
-                            result["__geomean__"][columnName] = values[0].ToString();
-                        }
-                        else
-                        {
-                            result["__geomean__"][columnName] = "N/A";
-                        }
-                    }
-                }
-            }
-        }
-
-        private void CalculatePassrate(List<BsonDocument> results, List<string> columnNames)
-        {
-            foreach (var result in results)
-            {
-                result["__passrate__"] = new BsonDocument();
-                var dataArray = result["data"].AsBsonArray;
-                foreach (var columnName in columnNames)
-                {
-                    try
-                    {
-                        var failedCount = dataArray.Count(d => {
-                            var value = d[columnName].AsString;
-                            return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
-                            });
-                        var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
-                        result["__passrate__"][columnName] = passrate;
-                    }
-                    catch(Exception ex) { 
-                        Trace.WriteLine(ex); 
-                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
-                        if(values.Count == 1)
-                        {
-                            result["__passrate__"][columnName] = values[0].ToString();
-                        }
-                        else
-                        {
-                            result["__passrate__"][columnName] = "N/A";
-                        }
-                    }
-                }
-            }
-        }
-
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{insertTimeInfo}/{count}/")]
         public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, int count)
@@ -314,7 +318,7 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}")]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}")]
         public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end)
         {
             using (managementDb)
@@ -331,8 +335,6 @@ namespace prism.web.service.Controller
             }
         }
 
-        [HttpPost]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/{resultType}")]
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, [FromBody] ResultQueryModel query)
         {
             using (managementDb)
