@@ -233,17 +233,14 @@ namespace prism.web.service.Controller
         {
             foreach (var result in results)
             {
-                result["__geomean__"] = new BsonArray();
+                result["__geomean__"] = new BsonDocument();
                 var dataArray = result["data"].AsBsonArray;
                 foreach (var columnName in colummnNames)
                 {
                     var values = dataArray.Select(d => String.IsNullOrWhiteSpace(d[columnName].ToString()) ? 0.0 : d[columnName].ToDouble());
                     var item = new BsonDocument();
-                    item.Add("startTime", result["startTime"]);
-                    item.Add("endTime", result["endTime"]);
                     var geomean = Calculator.Geomean(values.ToArray());
-                    item.Add(columnName, geomean);
-                    result["__geomean__"].AsBsonArray.Add(item);
+                    result["__geomean__"][columnName] = geomean;
                 }
             }
         }
@@ -252,7 +249,7 @@ namespace prism.web.service.Controller
         {
             foreach (var result in results)
             {
-                result["__passrate__"] = new BsonArray();
+                result["__passrate__"] = new BsonDocument();
                 var dataArray = result["data"].AsBsonArray;
                 foreach (var columnName in columnNames)
                 {
@@ -261,11 +258,7 @@ namespace prism.web.service.Controller
                         return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
                         });
                     var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
-                    var item = new BsonDocument();
-                    item.Add("startTime", result["startTime"]);
-                    item.Add("endTime", result["endTime"]);
-                    item.Add(columnName, passrate);
-                    result["__passrate__"].AsBsonArray.Add(item);
+                    result["__passrate__"][columnName] = passrate;
                 }
             }
         }
