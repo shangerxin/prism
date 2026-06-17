@@ -88,7 +88,7 @@ namespace prism.web.service.Controller
                     catch (Exception ex)
                     {
                         Trace.WriteLine(ex);
-                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
+                        var values = dataArray.Where(d => d.AsBsonDocument.Contains(columnName) && !String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
                         if (values.Count == 1)
                         {
                             result["__geomean__"][columnName] = values[0].ToString();
@@ -122,7 +122,7 @@ namespace prism.web.service.Controller
                     catch (Exception ex)
                     {
                         Trace.WriteLine(ex);
-                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
+                        var values = dataArray.Where(d => d.AsBsonDocument.Contains(columnName) && !String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
                         if (values.Count == 1)
                         {
                             result["__passrate__"][columnName] = values[0].ToString();
