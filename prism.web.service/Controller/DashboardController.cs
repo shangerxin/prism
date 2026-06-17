@@ -318,9 +318,10 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}")]
-        public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{insertTimeInfo}/{start}/{end}")]
+        public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, DateTime start, DateTime end)
         {
+            Enum.TryParse<TimeInfoTypes>(insertTimeInfo, out TimeInfoTypes timeInfo);
             using (managementDb)
             {
                 var buildInfo = (from build in managementDb.TestBuilds
@@ -330,7 +331,7 @@ namespace prism.web.service.Controller
                                  select new QueryResult { guid = build.guid, timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
                 var testResultController = new TestResultController();
                 var results = await testResultController.GetResults(projectName, testJobName, buildInfo.Select(x=>x.guid.ToString()).ToList(), dataInfo);
-                InsertTimeStamp(TimeInfoTypes.start, buildInfo, results);
+                InsertTimeStamp(timeInfo, buildInfo, results);
                 return toResponse(results.ToJson());
             }
         }
