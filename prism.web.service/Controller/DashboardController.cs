@@ -9,6 +9,7 @@ using prism.model;
 using prism.web.service.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -237,10 +238,25 @@ namespace prism.web.service.Controller
                 var dataArray = result["data"].AsBsonArray;
                 foreach (var columnName in colummnNames)
                 {
-                    var values = dataArray.Select(d => String.IsNullOrWhiteSpace(d[columnName].ToString()) ? 0.0 : d[columnName].ToDouble());
-                    var item = new BsonDocument();
-                    var geomean = Calculator.Geomean(values.ToArray());
-                    result["__geomean__"][columnName] = geomean;
+                    try
+                    {
+                        var values = dataArray.Select(d => String.IsNullOrWhiteSpace(d[columnName].ToString()) ? 0.0 : d[columnName].ToDouble());
+                        var item = new BsonDocument();
+                        var geomean = Calculator.Geomean(values.ToArray());
+                        result["__geomean__"][columnName] = geomean;
+                    }
+                    catch (Exception ex) {
+                        Trace.WriteLine(ex);
+                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
+                        if(values.Count == 1)
+                        {
+                            result["__geomean__"][columnName] = values[0].ToString();
+                        }
+                        else
+                        {
+                            result["__geomean__"][columnName] = "N/A";
+                        }
+                    }
                 }
             }
         }
@@ -253,12 +269,27 @@ namespace prism.web.service.Controller
                 var dataArray = result["data"].AsBsonArray;
                 foreach (var columnName in columnNames)
                 {
-                    var failedCount = dataArray.Count(d => {
-                        var value = d[columnName].AsString;
-                        return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
-                        });
-                    var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
-                    result["__passrate__"][columnName] = passrate;
+                    try
+                    {
+                        var failedCount = dataArray.Count(d => {
+                            var value = d[columnName].AsString;
+                            return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
+                            });
+                        var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
+                        result["__passrate__"][columnName] = passrate;
+                    }
+                    catch(Exception ex) { 
+                        Trace.WriteLine(ex); 
+                        var values = dataArray.Where(d => String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
+                        if(values.Count == 1)
+                        {
+                            result["__passrate__"][columnName] = values[0].ToString();
+                        }
+                        else
+                        {
+                            result["__passrate__"][columnName] = "N/A";
+                        }
+                    }
                 }
             }
         }
