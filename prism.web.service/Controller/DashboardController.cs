@@ -80,7 +80,7 @@ namespace prism.web.service.Controller
                 {
                     try
                     {
-                        var values = dataArray.Select(d => String.IsNullOrWhiteSpace(d[columnName].ToString()) ? 0.0 : d[columnName].ToDouble());
+                        var values = dataArray.Select(d => d.AsBsonDocument.Contains(columnName) && !String.IsNullOrWhiteSpace(d[columnName].ToString()) ? d[columnName].ToDouble() : 0.0);
                         var item = new BsonDocument();
                         var geomean = Calculator.Geomean(values.ToArray());
                         result["__geomean__"][columnName] = geomean;
@@ -113,7 +113,7 @@ namespace prism.web.service.Controller
                     try
                     {
                         var failedCount = dataArray.Count(d => {
-                            var value = d[columnName].AsString;
+                            var value = d.AsBsonDocument.Contains(columnName) ? d[columnName].AsString : string.Empty;
                             return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
                         });
                         var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
