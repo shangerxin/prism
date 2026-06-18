@@ -94,3 +94,7 @@ Notes:
 - `host` must include the API prefix, for example `https://localhost:44303/api/v1`.
 - `-g` can be provided to set a specific build GUID. If omitted, one is auto-generated.
 - Use `-m env`, `-m param`, or `-m meta` to upload environment/parameter/metadata with the same flow.
+
+
+### Versioning
+0.1.0 - Initial version with basic test result upload and management features. Support display the result on Grafana dashboard.
