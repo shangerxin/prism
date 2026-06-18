@@ -72,6 +72,25 @@ namespace prism.web.service.Controller
             });
         }
 
+        protected Boolean IsContains(List<BsonDocument> results, string columnName, string rootItem = "data")
+        {
+            return results.Count > 0 && results.All(r => r[rootItem].AsBsonArray.Values.OfType<BsonDocument>().All(d => d.Contains(columnName)));
+        }
+
+        protected Boolean IsContains(BsonDocument result, string columnName, string rootItem = "data")
+        {
+            return IsContains(new List<BsonDocument> { result }, columnName, rootItem);
+        }
+
+        protected string FisrtOrDefault(BsonDocument result, string columnName, string rootItem = "data", string defaultValue = "")
+        {
+            if (IsContains(result, columnName, rootItem))
+            {
+                return result[rootItem].AsBsonArray.Values.OfType<BsonDocument>().FirstOrDefault()?[columnName].ToString() ?? defaultValue;
+            }
+            return "";
+        }
+
         protected void CalculateGeomean(List<BsonDocument> results, List<string> colummnNames)
         {
             foreach (var result in results)
@@ -90,10 +109,9 @@ namespace prism.web.service.Controller
                     catch (Exception ex)
                     {
                         Trace.WriteLine(ex);
-                        var values = dataArray.Where(d => d.AsBsonDocument.Contains(columnName) && !String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
-                        if (values.Count == 1)
+                        if (IsContains(result, columnName))
                         {
-                            result["__geomean__"][columnName] = values[0].ToString();
+                            result["__geomean__"][columnName] = FisrtOrDefault(result, columnName);
                         }
                         else
                         {
@@ -114,7 +132,8 @@ namespace prism.web.service.Controller
                 {
                     try
                     {
-                        var failedCount = dataArray.Count(d => {
+                        var failedCount = dataArray.Count(d =>
+                        {
                             var value = d.AsBsonDocument.Contains(columnName) ? d[columnName].AsString : string.Empty;
                             return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
                         });
@@ -124,10 +143,9 @@ namespace prism.web.service.Controller
                     catch (Exception ex)
                     {
                         Trace.WriteLine(ex);
-                        var values = dataArray.Where(d => d.AsBsonDocument.Contains(columnName) && !String.IsNullOrWhiteSpace(d[columnName].ToString())).Distinct().ToList();
-                        if (values.Count == 1)
+                        if (IsContains(result, columnName))
                         {
-                            result["__passrate__"][columnName] = values[0].ToString();
+                            result["__passrate__"][columnName] = FisrtOrDefault(result, columnName);
                         }
                         else
                         {
@@ -140,11 +158,11 @@ namespace prism.web.service.Controller
 
         protected List<BsonDocument> OrderBy(List<BsonDocument> results, string columnName, bool isDescending = false)
         {
-            if(results.Count > 0 && 
-               !String.IsNullOrEmpty(columnName) && 
-               results.All(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().All(d => d.Contains(columnName))))
+            if (results.Count > 0 &&
+               !String.IsNullOrEmpty(columnName) &&
+               IsContains(results, columnName))
             {
-                results = results.OrderBy(r => r["data"].AsBsonArray.FirstOrDefault()?[columnName].ToString()??"").ToList();
+                results = results.OrderBy(r => r["data"].AsBsonArray.FirstOrDefault()?[columnName].ToString() ?? "").ToList();
             }
 
             if (isDescending)
@@ -184,9 +202,9 @@ namespace prism.web.service.Controller
             using (managementDb)
             {
                 var buildGuid = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName
-                                  orderby build.startTime descending
-                                  select build.guid.ToString()).FirstOrDefault();
+                                 where build.TestJob.name == testJobName
+                                 orderby build.startTime descending
+                                 select build.guid.ToString()).FirstOrDefault();
                 var results = await _testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
                 results = OrderBy(results, orderBy, true);
                 CalculateGeomean(results, names);
@@ -240,7 +258,7 @@ namespace prism.web.service.Controller
             using (managementDb)
             {
                 var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName 
+                                  where build.TestJob.name == testJobName
                                   orderby build.startTime descending
                                   select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
@@ -275,10 +293,10 @@ namespace prism.web.service.Controller
             using (managementDb)
             {
                 var buildGuids = (from build in managementDb.TestBuilds
-                                     where build.TestJob.name == testJobName &&
-                                     build.startTime >= start && build.endTime <= end
-                                     orderby build.startTime 
-                                     select build.guid.ToString()).ToList();
+                                  where build.TestJob.name == testJobName &&
+                                  build.startTime >= start && build.endTime <= end
+                                  orderby build.startTime
+                                  select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
                 results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
@@ -292,10 +310,10 @@ namespace prism.web.service.Controller
             using (managementDb)
             {
                 var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName 
+                                  where build.TestJob.name == testJobName
                                   orderby build.timestamp descending
                                   select build.guid).Take(count);
-                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x=>x.ToString()).ToList(), dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
                 results = OrderBy(results, orderBy, true);
                 return toResponse(results.ToJson());
             }
@@ -309,7 +327,7 @@ namespace prism.web.service.Controller
             {
                 Enum.TryParse<ResultTypes>(resultType, out ResultTypes testResultType);
                 var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName && build.testResultId == (int) testResultType
+                                  where build.TestJob.name == testJobName && build.testResultId == (int)testResultType
                                   orderby build.timestamp descending
                                   select new { build.guid, build.timestamp }).Take(count).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.guid.ToString()).ToList(), dataInfo);
@@ -348,7 +366,7 @@ namespace prism.web.service.Controller
                                  build.startTime >= start && build.endTime <= end
                                  orderby build.startTime
                                  select new QueryResult { guid = build.guid, timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
-                var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x=>x.guid.ToString()).ToList(), dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid.ToString()).ToList(), dataInfo);
                 results = OrderBy(results, orderBy);
                 InsertTimeStamp(timeInfo, buildInfo, results);
                 return toResponse(results.ToJson());
@@ -367,13 +385,13 @@ namespace prism.web.service.Controller
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
                 results = OrderBy(results, orderBy, true);
                 var colummns = (from column in query.SelectColumns
-                select new
-                {
-                     Column = column,
-                     Values = (from result in results
-                               where result != null && result.GetValue(column, null) != null
-                               select result.GetValue(column)).ToList()
-                });
+                                select new
+                                {
+                                    Column = column,
+                                    Values = (from result in results
+                                              where result != null && result.GetValue(column, null) != null
+                                              select result.GetValue(column)).ToList()
+                                });
 
                 throw new NotImplementedException();
             }
