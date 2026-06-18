@@ -29,7 +29,7 @@ namespace prism.web.service.Controller
 {
     public class DashboardController : PrismControllerBase<Object>
     {
-
+        protected int _defaultTakeCount = 50;
         protected TestResultController _testResultController = new TestResultController();
         #region Protected
         protected class QueryResult
@@ -91,79 +91,99 @@ namespace prism.web.service.Controller
             return "";
         }
 
-        protected void CalculateGeomean(List<BsonDocument> results, List<string> colummnNames, List<string> addColumnNames = null)
+        protected void CalculateGeomeans(List<BsonDocument> results, List<string> colummnNames, List<string> addColumnNames = null)
         {
             foreach (var result in results)
             {
-                result["__geomean__"] = new BsonDocument();
-                var dataArray = result["data"].AsBsonArray;
-                foreach (var columnName in colummnNames)
-                {
-                    try
-                    {
-                        var values = dataArray.Select(d => d.AsBsonDocument.Contains(columnName) && !String.IsNullOrWhiteSpace(d[columnName].ToString()) ? d[columnName].ToDouble() : 0.0);
-                        var item = new BsonDocument();
-                        var geomean = Calculator.Geomean(values.ToArray());
-                        result["__geomean__"][columnName] = geomean;
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.WriteLine(ex);
-                        if (IsContains(result, columnName))
-                        {
-                            result["__geomean__"][columnName] = FisrtOrDefault(result, columnName);
-                        }
-                        else
-                        {
-                            result["__geomean__"][columnName] = "N/A";
-                        }
-                    }
-                }
-
-                addColumnNames?.ForEach(columnName =>
-                {
-                    result["__geomean__"][columnName] = FisrtOrDefault(result, columnName);
-                });
+                CalculateGeomean(result, colummnNames, addColumnNames);
             }
         }
 
-        protected void CalculatePassrate(List<BsonDocument> results, List<string> columnNames, List<string> addColumnNames = null)
+        protected void CalculateGeomean(BsonDocument result, List<string> colummnNames, List<string> addColumnNames)
+        {
+            if(result == null)
+            {
+                return;
+            }
+
+            result["__geomean__"] = new BsonDocument();
+            var dataArray = result["data"].AsBsonArray;
+            foreach (var columnName in colummnNames)
+            {
+                try
+                {
+                    var values = dataArray.Select(d => d.AsBsonDocument.Contains(columnName) && !String.IsNullOrWhiteSpace(d[columnName].ToString()) ? d[columnName].ToDouble() : 0.0);
+                    var item = new BsonDocument();
+                    var geomean = Calculator.Geomean(values.ToArray());
+                    result["__geomean__"][columnName] = geomean;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex);
+                    if (IsContains(result, columnName))
+                    {
+                        result["__geomean__"][columnName] = FisrtOrDefault(result, columnName);
+                    }
+                    else
+                    {
+                        result["__geomean__"][columnName] = "N/A";
+                    }
+                }
+            }
+
+            addColumnNames?.ForEach(columnName =>
+            {
+                result["__geomean__"][columnName] = FisrtOrDefault(result, columnName);
+            });
+        }
+
+        protected void CalculatePassrates(List<BsonDocument> results, List<string> columnNames, List<string> addColumnNames = null)
         {
             foreach (var result in results)
             {
-                result["__passrate__"] = new BsonDocument();
-                var dataArray = result["data"].AsBsonArray;
-                foreach (var columnName in columnNames)
+                CalculatePassrate(result, columnNames, addColumnNames);
+            }
+        }
+
+        protected void CalculatePassrate(BsonDocument result, List<string> columnNames, List<string> addColumnNames)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            result["__passrate__"] = new BsonDocument();
+            var dataArray = result["data"].AsBsonArray;
+            foreach (var columnName in columnNames)
+            {
+                try
                 {
-                    try
+                    var failedCount = dataArray.Count(d =>
                     {
-                        var failedCount = dataArray.Count(d =>
-                        {
-                            var value = d.AsBsonDocument.Contains(columnName) ? d[columnName].AsString : string.Empty;
-                            return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
-                        });
-                        var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
-                        result["__passrate__"][columnName] = passrate;
+                        var value = d.AsBsonDocument.Contains(columnName) ? d[columnName].AsString : string.Empty;
+                        return String.IsNullOrWhiteSpace(value) || value.ToLower().Contains("fail");
+                    });
+                    var passrate = (double)(dataArray.Count - failedCount) / dataArray.Count;
+                    result["__passrate__"][columnName] = passrate;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex);
+                    if (IsContains(result, columnName))
+                    {
+                        result["__passrate__"][columnName] = FisrtOrDefault(result, columnName);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Trace.WriteLine(ex);
-                        if (IsContains(result, columnName))
-                        {
-                            result["__passrate__"][columnName] = FisrtOrDefault(result, columnName);
-                        }
-                        else
-                        {
-                            result["__passrate__"][columnName] = "N/A";
-                        }
+                        result["__passrate__"][columnName] = "N/A";
                     }
                 }
-
-                addColumnNames?.ForEach(columnName =>
-                {
-                    result["__passrate__"][columnName] = FisrtOrDefault(result, columnName);
-                });
             }
+
+            addColumnNames?.ForEach(columnName =>
+            {
+                result["__passrate__"][columnName] = FisrtOrDefault(result, columnName);
+            });
         }
 
         protected List<BsonDocument> OrderBy(List<BsonDocument> results, string columnName, bool isDescending = false)
@@ -182,6 +202,37 @@ namespace prism.web.service.Controller
             return results;
         }
 
+        protected int DefaultTakeCount(int queryCount = 0)
+        {
+            return Math.Max(queryCount, _defaultTakeCount);
+        }
+
+        protected List<string> GetBuildGuids(string projectName, string testJobName, string orderBy, int count = 1, bool isOldToNew = false)
+        {
+            List<string> buildGuids = null;
+            if (String.IsNullOrEmpty(orderBy))
+            {
+                buildGuids = (from build in managementDb.TestBuilds
+                              where build.TestJob.name == testJobName && build.TestJob.Project.name == projectName
+                              orderby build.startTime descending, build.timestamp descending
+                              select build.guid.ToString()).Take(count).ToList();
+            }
+            else
+            {
+                buildGuids = (from build in managementDb.TestBuilds
+                              where build.TestJob.name == testJobName && build.TestJob.Project.name == projectName
+                              orderby build.startTime descending, build.timestamp descending
+                              select build.guid.ToString()).Take(DefaultTakeCount(count)).ToList();
+            }
+
+            if (isOldToNew)
+            {
+                buildGuids.Reverse();
+            }
+
+            return buildGuids;
+        }
+
 
         #endregion
 
@@ -195,12 +246,13 @@ namespace prism.web.service.Controller
             {
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
+                                  build.TestJob.Project.name == projectName &&
                                   build.startTime >= start && build.endTime <= end
-                                  orderby build.startTime
+                                  orderby build.startTime, build.timestamp
                                   select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
                 results = OrderBy(results, orderBy);
-                CalculateGeomean(results, names, addNames);
+                CalculateGeomeans(results, names, addNames);
                 return toResponse(results.ToJson());
             }
         }
@@ -213,14 +265,11 @@ namespace prism.web.service.Controller
             List<string> addNames = addColumnNames.SplitToList();
             using (managementDb)
             {
-                var buildGuid = (from build in managementDb.TestBuilds
-                                 where build.TestJob.name == testJobName
-                                 orderby build.startTime descending
-                                 select build.guid.ToString()).FirstOrDefault();
-                var results = await _testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
-                results = OrderBy(results, orderBy);
-                CalculateGeomean(results, names, addNames);
-                return toResponse(results.ToJson());
+                List<string> buildGuids = GetBuildGuids(projectName, testJobName, orderBy);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var result = OrderBy(results, orderBy).FirstOrDefault();
+                CalculateGeomean(result, names, addNames);
+                return toResponse(result?.ToJson());
             }
         }
 
@@ -232,18 +281,13 @@ namespace prism.web.service.Controller
             List<string> addNames = addColumnNames.SplitToList();
             using (managementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName
-                                  orderby build.startTime descending
-                                  select build.guid.ToString()).Take(count).ToList();
-                buildGuids.Reverse();
+                List<string> buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy);
-                CalculateGeomean(results, names, addNames);
+                results = OrderBy(results, orderBy).Take(count).ToList();
+                CalculateGeomeans(results, names, addNames);
                 return toResponse(results.ToJson());
             }
         }
-
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrates/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}/{addColumnNames?}/{orderBy?}")]
@@ -255,12 +299,13 @@ namespace prism.web.service.Controller
             {
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
-                                  build.startTime >= start && build.endTime <= end
-                                  orderby build.startTime
+                                  build.startTime >= start && build.endTime <= end &&
+                                  build.TestJob.Project.name == projectName
+                                  orderby build.startTime, build.timestamp
                                   select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
                 results = OrderBy(results, orderBy);
-                CalculatePassrate(results, names, addNames);
+                CalculatePassrates(results, names, addNames);
                 return toResponse(results.ToJson());
             }
         }
@@ -273,14 +318,11 @@ namespace prism.web.service.Controller
             List<string> addNames = addColumnNames.SplitToList();
             using (managementDb)
             {
-                var buildGuid = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName
-                                  orderby build.startTime descending
-                                  select build.guid.ToString()).FirstOrDefault();
-                var results = await _testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
-                results = OrderBy(results, orderBy, true);
-                CalculatePassrate(results, names, addNames);
-                return toResponse(results.ToJson());
+                var buildGuids = GetBuildGuids(projectName, testJobName, orderBy);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var result = OrderBy(results, orderBy, true).FirstOrDefault();
+                CalculatePassrate(result, names, addNames);
+                return toResponse(result?.ToJson());
             }
         }
 
@@ -292,14 +334,10 @@ namespace prism.web.service.Controller
             List<string> addNames = addColumnNames.SplitToList();
             using (managementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName
-                                  orderby build.startTime descending
-                                  select build.guid.ToString()).Take(count).ToList();
-                buildGuids.Reverse();
+                var buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy);
-                CalculatePassrate(results, names, addNames);
+                results = OrderBy(results, orderBy).Take(count).ToList();
+                CalculatePassrates(results, names, addNames);
                 return toResponse(results.ToJson());
             }
         }
@@ -312,8 +350,9 @@ namespace prism.web.service.Controller
             {
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
+                                  build.TestJob.Project.name == projectName &&
                                   build.startTime >= start && build.endTime <= end
-                                  orderby build.startTime
+                                  orderby build.startTime, build.timestamp
                                   select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
                 results = OrderBy(results, orderBy);
@@ -327,13 +366,9 @@ namespace prism.web.service.Controller
         {
             using (managementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName
-                                  orderby build.timestamp descending
-                                  select build.guid.ToString()).Take(count).ToList();
-                buildGuids.Reverse();
+                var buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy).Take(count).ToList();
                 return toResponse(results.ToJson());
             }
         }
@@ -346,12 +381,14 @@ namespace prism.web.service.Controller
             {
                 Enum.TryParse<ResultTypes>(resultType, out ResultTypes testResultType);
                 var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName && build.testResultId == (int)testResultType
-                                  orderby build.timestamp descending
-                                  select build.guid.ToString()).Take(count).ToList();
+                                  where build.TestJob.name == testJobName && 
+                                  build.TestJob.Project.name == projectName && 
+                                  build.testResultId == (int)testResultType
+                                  orderby build.startTime descending, build.timestamp descending
+                                  select build.guid.ToString()).Take(DefaultTakeCount(count)).ToList();
                 buildGuids.Reverse();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy).Take(count).ToList();
                 return toResponse(results.ToJson());
             }
         }
@@ -364,13 +401,13 @@ namespace prism.web.service.Controller
             using (managementDb)
             {
                 var buildInfo = (from build in managementDb.TestBuilds
-                                 where build.TestJob.name == testJobName
-                                 orderby build.timestamp descending
-                                 select new QueryResult { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(count).ToList();
+                                 where build.TestJob.name == testJobName && build.TestJob.Project.name == projectName
+                                 orderby build.startTime descending, build.timestamp descending
+                                 select new QueryResult { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(DefaultTakeCount(count)).ToList();
                 buildInfo.Reverse();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid).ToList(), dataInfo);
                 InsertTimeStamp(timeInfo, buildInfo, results);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy).Take(count).ToList();
                 return toResponse(results.ToJson());
             }
         }
@@ -384,8 +421,9 @@ namespace prism.web.service.Controller
             {
                 var buildInfo = (from build in managementDb.TestBuilds
                                  where build.TestJob.name == testJobName &&
+                                 build.TestJob.Project.name == projectName &&
                                  build.startTime >= start && build.endTime <= end
-                                 orderby build.startTime
+                                 orderby build.startTime, build.timestamp
                                  select new QueryResult { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
                 var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid).ToList(), dataInfo);
                 results = OrderBy(results, orderBy);
