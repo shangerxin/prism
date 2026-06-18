@@ -29,6 +29,8 @@ namespace prism.web.service.Controller
 {
     public class DashboardController : PrismControllerBase<Object>
     {
+
+        protected TestResultController _testResultController = new TestResultController();
         #region Protected
         protected class QueryResult
         {
@@ -135,11 +137,25 @@ namespace prism.web.service.Controller
                 }
             }
         }
+
+        protected List<BsonDocument> OrderBy(List<BsonDocument> results, string columnName)
+        {
+            if(results.Count > 0 && 
+               !String.IsNullOrEmpty(columnName) && 
+               results.All(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().All(d => d.Contains(columnName))))
+            {
+                return results.OrderBy(r => r["data"].AsBsonArray.FirstOrDefault()?[columnName].ToString()??"").ToList();
+            }
+        
+            return results;
+        }
+
+
         #endregion
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomeans/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetGeomeans(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomeans/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetGeomeans(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames, string orderBy)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -149,16 +165,16 @@ namespace prism.web.service.Controller
                                   build.startTime >= start && build.endTime <= end
                                   orderby build.startTime
                                   select build.guid.ToString()).ToList();
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                results = OrderBy(results, orderBy);
                 CalculateGeomean(results, names);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomeans/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetLastGeomeans(string projectName, string testJobName, string dataInfo, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomeans/{projectName}/{testJobName}/{dataInfo}/{columnNames}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastGeomeans(string projectName, string testJobName, string dataInfo, string columnNames, string orderBy = null)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -167,16 +183,16 @@ namespace prism.web.service.Controller
                                   where build.TestJob.name == testJobName
                                   orderby build.startTime descending
                                   select build.guid.ToString()).FirstOrDefault();
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
+                results = OrderBy(results, orderBy);
                 CalculateGeomean(results, names);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomeans/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetLastGeomeans(string projectName, string testJobName, string dataInfo, int count, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastGeomeans/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastGeomeans(string projectName, string testJobName, string dataInfo, int count, string columnNames, string orderBy = null)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -185,16 +201,17 @@ namespace prism.web.service.Controller
                                   where build.TestJob.name == testJobName
                                   orderby build.startTime descending
                                   select build.guid.ToString()).Take(count).ToList();
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                results = OrderBy(results, orderBy);
                 CalculateGeomean(results, names);
                 return toResponse(results.ToJson());
             }
         }
 
+
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrates/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetPassrates(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetPassrates/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetPassrates(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string columnNames, string orderBy = null)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -204,16 +221,16 @@ namespace prism.web.service.Controller
                                   build.startTime >= start && build.endTime <= end
                                   orderby build.startTime
                                   select build.guid.ToString()).ToList();
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                results = OrderBy(results, orderBy);
                 CalculatePassrate(results, names);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrates/{projectName}/{testJobName}/{dataInfo}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetLastPassrates(string projectName, string testJobName, string dataInfo, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrates/{projectName}/{testJobName}/{dataInfo}/{columnNames}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastPassrates(string projectName, string testJobName, string dataInfo, string columnNames, string orderBy = null)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -222,16 +239,16 @@ namespace prism.web.service.Controller
                                   where build.TestJob.name == testJobName 
                                   orderby build.startTime descending
                                   select build.guid.ToString()).ToList();
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                results = OrderBy(results, orderBy);
                 CalculatePassrate(results, names);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrates/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}")]
-        public async Task<HttpResponseMessage> GetLastPassrates(string projectName, string testJobName, string dataInfo, int count, string columnNames)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastPassrates/{projectName}/{testJobName}/{dataInfo}/{count}/{columnNames}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastPassrates(string projectName, string testJobName, string dataInfo, int count, string columnNames, string orderBy = null)
         {
             List<string> names = columnNames.SplitToList();
             using (managementDb)
@@ -240,16 +257,16 @@ namespace prism.web.service.Controller
                                   where build.TestJob.name == testJobName
                                   orderby build.startTime descending
                                   select build.guid.ToString()).Take(count).ToList();
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                results = OrderBy(results, orderBy);
                 CalculatePassrate(results, names);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}")]
-        public async Task<HttpResponseMessage> GetResults(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetResults(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string orderBy = null)
         {
             using (managementDb)
             {
@@ -258,15 +275,15 @@ namespace prism.web.service.Controller
                                      build.startTime >= start && build.endTime <= end
                                      orderby build.startTime 
                                      select build.guid.ToString()).ToList();
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/")]
-        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string orderBy = null)
         {
             using (managementDb)
             {
@@ -274,15 +291,15 @@ namespace prism.web.service.Controller
                                   where build.TestJob.name == testJobName 
                                   orderby build.timestamp descending
                                   select build.guid).Take(count);
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids.Select(x=>x.ToString()).ToList(), dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x=>x.ToString()).ToList(), dataInfo);
+                results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{resultType}/{count}/")]
-        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, string resultType, int count)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{resultType}/{count}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, string resultType, int count, string orderBy = null)
         {
             using (managementDb)
             {
@@ -291,16 +308,15 @@ namespace prism.web.service.Controller
                                   where build.TestJob.name == testJobName && build.testResultId == (int) testResultType
                                   orderby build.timestamp descending
                                   select new { build.guid, build.timestamp }).Take(count).ToList();
-                var testResultController = new TestResultController();
-
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.guid.ToString()).ToList(), dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.guid.ToString()).ToList(), dataInfo);
+                results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{insertTimeInfo}/{count}/")]
-        public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, int count)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{insertTimeInfo}/{count}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, int count, string orderBy = null)
         {
             Enum.TryParse<TimeInfoTypes>(insertTimeInfo, out TimeInfoTypes timeInfo);
             using (managementDb)
@@ -309,17 +325,16 @@ namespace prism.web.service.Controller
                                  where build.TestJob.name == testJobName
                                  orderby build.timestamp descending
                                  select new QueryResult { guid = build.guid, timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(count);
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid.ToString()).ToList(), dataInfo);
-
+                var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid.ToString()).ToList(), dataInfo);
                 InsertTimeStamp(timeInfo, buildInfo, results);
+                results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
             }
         }
 
         [HttpGet]
-        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{insertTimeInfo}/{start}/{end}")]
-        public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, DateTime start, DateTime end)
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{insertTimeInfo}/{start}/{end}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, DateTime start, DateTime end, string orderBy = null)
         {
             Enum.TryParse<TimeInfoTypes>(insertTimeInfo, out TimeInfoTypes timeInfo);
             using (managementDb)
@@ -329,14 +344,14 @@ namespace prism.web.service.Controller
                                  build.startTime >= start && build.endTime <= end
                                  orderby build.startTime
                                  select new QueryResult { guid = build.guid, timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
-                var testResultController = new TestResultController();
-                var results = await testResultController.GetResults(projectName, testJobName, buildInfo.Select(x=>x.guid.ToString()).ToList(), dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x=>x.guid.ToString()).ToList(), dataInfo);
+                results = OrderBy(results, orderBy);
                 InsertTimeStamp(timeInfo, buildInfo, results);
                 return toResponse(results.ToJson());
             }
         }
 
-        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, [FromBody] ResultQueryModel query)
+        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, [FromBody] ResultQueryModel query, string orderBy = null)
         {
             using (managementDb)
             {
@@ -345,9 +360,8 @@ namespace prism.web.service.Controller
                                   where build.TestJob.name == testJobName && build.testResultId == (int)testResultType
                                   orderby build.timestamp descending
                                   select build.guid).Take(count).ToList();
-                var testResultController = new TestResultController();
-
-                var results = await testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
+                results = OrderBy(results, orderBy);
                 var colummns = (from column in query.SelectColumns
                 select new
                 {
