@@ -218,7 +218,7 @@ namespace prism.web.service.Controller
                                  orderby build.startTime descending
                                  select build.guid.ToString()).FirstOrDefault();
                 var results = await _testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
-                results = OrderBy(results, orderBy, true);
+                results = OrderBy(results, orderBy);
                 CalculateGeomean(results, names, addNames);
                 return toResponse(results.ToJson());
             }
@@ -235,9 +235,9 @@ namespace prism.web.service.Controller
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName
                                   orderby build.startTime descending
-                                  select build.guid.ToString()).Take(count).ToList();
+                                  select build.guid.ToString()).Take(count).Reverse().ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy, true);
+                results = OrderBy(results, orderBy);
                 CalculateGeomean(results, names, addNames);
                 return toResponse(results.ToJson());
             }
@@ -272,11 +272,11 @@ namespace prism.web.service.Controller
             List<string> addNames = addColumnNames.SplitToList();
             using (managementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuid = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName
                                   orderby build.startTime descending
-                                  select build.guid.ToString()).ToList();
-                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                                  select build.guid.ToString()).FirstOrDefault();
+                var results = await _testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
                 results = OrderBy(results, orderBy, true);
                 CalculatePassrate(results, names, addNames);
                 return toResponse(results.ToJson());
@@ -294,9 +294,9 @@ namespace prism.web.service.Controller
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName
                                   orderby build.startTime descending
-                                  select build.guid.ToString()).Take(count).ToList();
+                                  select build.guid.ToString()).Take(count).Reverse().ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy, true);
+                results = OrderBy(results, orderBy);
                 CalculatePassrate(results, names, addNames);
                 return toResponse(results.ToJson());
             }
@@ -328,9 +328,9 @@ namespace prism.web.service.Controller
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName
                                   orderby build.timestamp descending
-                                  select build.guid).Take(count);
+                                  select build.guid).Take(count).Reverse();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
-                results = OrderBy(results, orderBy, true);
+                results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
             }
         }
@@ -345,9 +345,9 @@ namespace prism.web.service.Controller
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName && build.testResultId == (int)testResultType
                                   orderby build.timestamp descending
-                                  select new { build.guid, build.timestamp }).Take(count).ToList();
+                                  select new { build.guid, build.timestamp }).Take(count).Reverse().ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.guid.ToString()).ToList(), dataInfo);
-                results = OrderBy(results, orderBy, true);
+                results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
             }
         }
@@ -362,10 +362,10 @@ namespace prism.web.service.Controller
                 var buildInfo = (from build in managementDb.TestBuilds
                                  where build.TestJob.name == testJobName
                                  orderby build.timestamp descending
-                                 select new QueryResult { guid = build.guid, timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(count);
+                                 select new QueryResult { guid = build.guid, timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(count).Reverse();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid.ToString()).ToList(), dataInfo);
                 InsertTimeStamp(timeInfo, buildInfo, results);
-                results = OrderBy(results, orderBy, true);
+                results = OrderBy(results, orderBy);
                 return toResponse(results.ToJson());
             }
         }
@@ -397,9 +397,9 @@ namespace prism.web.service.Controller
                 var buildGuids = (from build in managementDb.TestBuilds
                                   where build.TestJob.name == testJobName && build.testResultId == (int)testResultType
                                   orderby build.timestamp descending
-                                  select build.guid).Take(count).ToList();
+                                  select build.guid).Take(count).Reverse().ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
-                results = OrderBy(results, orderBy, true);
+                results = OrderBy(results, orderBy);
                 var colummns = (from column in query.SelectColumns
                                 select new
                                 {
