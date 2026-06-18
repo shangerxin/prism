@@ -138,15 +138,19 @@ namespace prism.web.service.Controller
             }
         }
 
-        protected List<BsonDocument> OrderBy(List<BsonDocument> results, string columnName)
+        protected List<BsonDocument> OrderBy(List<BsonDocument> results, string columnName, bool isDescending = false)
         {
             if(results.Count > 0 && 
                !String.IsNullOrEmpty(columnName) && 
                results.All(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().All(d => d.Contains(columnName))))
             {
-                return results.OrderBy(r => r["data"].AsBsonArray.FirstOrDefault()?[columnName].ToString()??"").ToList();
+                results = results.OrderBy(r => r["data"].AsBsonArray.FirstOrDefault()?[columnName].ToString()??"").ToList();
             }
-        
+
+            if (isDescending)
+            {
+                results.Reverse();
+            }
             return results;
         }
 
@@ -184,7 +188,7 @@ namespace prism.web.service.Controller
                                   orderby build.startTime descending
                                   select build.guid.ToString()).FirstOrDefault();
                 var results = await _testResultController.GetResults(projectName, testJobName, new List<string> { buildGuid }, dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 CalculateGeomean(results, names);
                 return toResponse(results.ToJson());
             }
@@ -202,7 +206,7 @@ namespace prism.web.service.Controller
                                   orderby build.startTime descending
                                   select build.guid.ToString()).Take(count).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 CalculateGeomean(results, names);
                 return toResponse(results.ToJson());
             }
@@ -240,7 +244,7 @@ namespace prism.web.service.Controller
                                   orderby build.startTime descending
                                   select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 CalculatePassrate(results, names);
                 return toResponse(results.ToJson());
             }
@@ -258,7 +262,7 @@ namespace prism.web.service.Controller
                                   orderby build.startTime descending
                                   select build.guid.ToString()).Take(count).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 CalculatePassrate(results, names);
                 return toResponse(results.ToJson());
             }
@@ -292,7 +296,7 @@ namespace prism.web.service.Controller
                                   orderby build.timestamp descending
                                   select build.guid).Take(count);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x=>x.ToString()).ToList(), dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 return toResponse(results.ToJson());
             }
         }
@@ -309,7 +313,7 @@ namespace prism.web.service.Controller
                                   orderby build.timestamp descending
                                   select new { build.guid, build.timestamp }).Take(count).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.guid.ToString()).ToList(), dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 return toResponse(results.ToJson());
             }
         }
@@ -327,7 +331,7 @@ namespace prism.web.service.Controller
                                  select new QueryResult { guid = build.guid, timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(count);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid.ToString()).ToList(), dataInfo);
                 InsertTimeStamp(timeInfo, buildInfo, results);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 return toResponse(results.ToJson());
             }
         }
@@ -361,7 +365,7 @@ namespace prism.web.service.Controller
                                   orderby build.timestamp descending
                                   select build.guid).Take(count).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids.Select(x => x.ToString()).ToList(), dataInfo);
-                results = OrderBy(results, orderBy);
+                results = OrderBy(results, orderBy, true);
                 var colummns = (from column in query.SelectColumns
                 select new
                 {
