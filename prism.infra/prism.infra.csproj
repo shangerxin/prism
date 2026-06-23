@@ -43,8 +43,13 @@
   <ItemGroup>
     <Compile Include="Enum\TimeInfoTypes.cs" />
     <Compile Include="Extension\DateTimeExtensions.cs" />
+    <Compile Include="Extension\DirectoryExtensions.cs" />
     <Compile Include="Extension\StringExtensions.cs" />
     <Compile Include="Helper\Calculator.cs" />
+    <Compile Include="Runner\CondaRunner.cs" />
+    <Compile Include="Runner\RunnerBase.cs" />
+    <Compile Include="Runner\ScriptRunner.cs" />
+    <Compile Include="Helper\TempDirectoryContext.cs" />
     <Compile Include="IoC.cs" />
     <Compile Include="Model\IPrismTestResultsContext.cs" />
     <Compile Include="PrismObjectBase.cs" />

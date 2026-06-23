@@ -15,7 +15,7 @@ namespace prism.infra.Extension
             return isAddYear ? $"{date.Year}{seperator}{workweekPrefix}{week:D2}" : $"{workweekPrefix}{week:D2}";
         }
 
-        public static DateTime FromStringWorkWeek(string workweekString, string workweekPrefix = "WW", char seperator = '-', DayOfWeek startOfWeek = DayOfWeek.Monday)
+        public static DateTime FromStringWorkWeek(this DateTime date, string workweekString, string workweekPrefix = "WW", char seperator = '-', DayOfWeek startOfWeek = DayOfWeek.Monday)
         {
             if (!workweekString.Contains(workweekPrefix))
                 throw new ArgumentException($"Input string must contains the prefix '{workweekPrefix}'.");
@@ -26,9 +26,10 @@ namespace prism.infra.Extension
 
             var year = int.TryParse(yearPart, out int parsedYear) ? parsedYear : DateTime.Now.Year;
             var firstDayOfYear = new DateTime(year, 1, 1);
-            var daysOffset = (int)startOfWeek - (int)firstDayOfYear.DayOfWeek;
+            var daysOffset = Math.Max((int)startOfWeek - (int)firstDayOfYear.DayOfWeek, 0);
             var firstWeekStart = firstDayOfYear.AddDays(daysOffset);
-            return firstWeekStart.AddDays((weekNumber - 1) * 7);
+            date = firstWeekStart.AddDays((weekNumber - 1) * 7);
+            return date;
         }
     }
 }

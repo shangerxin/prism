@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace prism.infra.Helper
 {
-    public static class Calculator
+    public static class Calculator 
     {
         public static double Geomean(double[] values)
         {

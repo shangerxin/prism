@@ -10,6 +10,6 @@ public class StringExtensionsTest
     {
         string s = "1, 2, 3, , 4,5";
 
-        Assert.AreEqual(s.SplitToList(), new List<string> { "1", "2", "3", "4", "5" });
+        CollectionAssert.AreEqual(s.SplitToList(), new List<string> { "1", "2", "3", "4", "5" });
     }
 }
