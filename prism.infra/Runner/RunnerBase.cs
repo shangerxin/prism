@@ -48,6 +48,7 @@ namespace prism.infra.Runner
                 FileName = Executable,
                 Arguments = string.Join(" ", arguments),
                 UseShellExecute = false,
+                RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true,

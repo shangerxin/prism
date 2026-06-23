@@ -7,8 +7,15 @@ An management system for helping organize the test results, dashboard, test node
 3. Install MongoDB 8.0+.
 4. Install Node.js 18+.
 5. Install Git.
-6. Install SQL Server Management Studio (SSMS) (optional).
-7. Install XMind 8+ (optional).
+6. Create conda environment locate to prism.web.service/Venv/ and install the requirements from
+`requirements.txt`
+```bat
+conda create --prefix prism.web.service\Venv python=3.14
+conda activate prism.web.service\Venv
+pip install -r prism.web.service\Script\requirements.txt
+```
+7. Install SQL Server Management Studio (SSMS) (optional).
+8. Install XMind 8+ (optional).
 
 ## Run prism.web.service
 1. Open `Prism.slnx` in Visual Studio.

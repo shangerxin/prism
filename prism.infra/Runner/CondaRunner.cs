@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Pipes;
+using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace prism.infra.Runner
 {
@@ -14,6 +16,13 @@ namespace prism.infra.Runner
         protected string _pipeName;
         protected string _condaPath;
         protected string _venvPath;
+        protected void WorkerExecute(Func<Task> func)
+        {
+            var thread = new Thread(async () => await func());
+            thread.IsBackground = true;
+            thread.Start();
+            thread.Join();
+        }
 
         public CondaRunner(string condaPath, string venvPath) : base("cmd.exe", new List<string>())
         {
@@ -24,11 +33,11 @@ namespace prism.infra.Runner
             _venvPath = venvPath;
         }
 
-        public void ExecuteCmd(string cmd)
+        public async Task<int> ExecuteCmd(string cmd)
         {
-            Task.Run(async () =>
+            WorkerExecute(async () =>
             {
-                using (var client = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+                using (var client = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                 {
                     await client.WaitForConnectionAsync();
                     using (var writer = new StreamWriter(client))
@@ -39,14 +48,15 @@ namespace prism.infra.Runner
                     }
                 }
             });
-            Execute();
+            await ExecuteAsync();
+            return ExitCode;
         }
 
-        public void ExecuteCmds(List<string> cmds)
+        public async Task<int> ExecuteCmds(List<string> cmds)
         {
-            Task.Run(async () =>
+            WorkerExecute(async () =>
             {
-                using (var client = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+                using (var client = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                 {
                     await client.WaitForConnectionAsync();
                     using (var writer = new StreamWriter(client))
@@ -60,7 +70,8 @@ namespace prism.infra.Runner
                     }
                 }
             });
-            Execute();
+            await ExecuteAsync();
+            return ExitCode;
         }
 
         public override int Execute()
@@ -70,24 +81,32 @@ namespace prism.infra.Runner
                 return ExitCode;
             }
 
-            Task.Run(() =>
+            WorkerExecute(async () =>
             {
                 using (RunnerProcess = Process.Start(RunnerStartInfo))
-                using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out))
+                using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.Asynchronous))
+                using (var writer = RunnerProcess.StandardInput)
                 {
-                    var writer = RunnerProcess.StandardInput;
-                    client.Connect();
-                    using (var reader = new StreamReader(client))
+                    await client.ConnectAsync();
+                    string cmd;
+                    using (var cmdReader = new StreamReader(client))
                     {
-                        string line;
-                        while ((line = reader.ReadLine()) != null)
+                        while ((cmd = await cmdReader.ReadLineAsync()) != null)
                         {
-                            writer.WriteLine(line);
+                            if (writer.BaseStream.CanWrite)
+                            {
+                                writer.WriteLine(cmd);
+                            }
+                            else
+                            {
+                                Trace.WriteLine($"StandardInput is closed. Cannot write command. {cmd}");
+                            }
                         }
                     }
+                    
 
-                    StdOut = RunnerProcess.StandardOutput.ReadToEnd();
-                    StdErr = RunnerProcess.StandardError.ReadToEnd();
+                    StdOut = await RunnerProcess.StandardOutput.ReadToEndAsync();
+                    StdErr = await RunnerProcess.StandardError.ReadToEndAsync();
                     RunnerProcess.WaitForExit();
                     ExitCode = RunnerProcess.ExitCode;
                 }
@@ -95,9 +114,9 @@ namespace prism.infra.Runner
             return ExitCode;
         }
 
-        public void Exit(int exitCode=0)
+        public async Task<int> Exit(int exitCode=0)
         {
-            ExecuteCmd($"exit {exitCode}");
+            return await ExecuteCmd($"exit {exitCode}");
         }
     }
 }
