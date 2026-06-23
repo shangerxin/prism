@@ -13,11 +13,8 @@ public class CondaRunnerTest
     {
         var runner = new CondaRunner(condaPath, venvPath);
         await runner.ExecuteCmd("pip list");
-        Thread.Sleep(1000);
         Assert.IsNull(runner.StdErr);
-        Thread.Sleep(1000);
         Assert.Contains("pandas", runner.StdOut);
-        Thread.Sleep(1000);
         Assert.AreEqual(0, runner.ExitCode);
     }
 }

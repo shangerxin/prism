@@ -42,7 +42,7 @@ namespace prism.infra.Runner
                     await client.WaitForConnectionAsync();
                     using (var writer = new StreamWriter(client))
                     {
-                        await writer.WriteLineAsync($"${_condaPath} activate ${_venvPath}");
+                        await writer.WriteLineAsync($"call {_condaPath} activate {_venvPath}");
                         await writer.WriteLineAsync(cmd);
                         await writer.FlushAsync();
                     }
@@ -61,7 +61,7 @@ namespace prism.infra.Runner
                     await client.WaitForConnectionAsync();
                     using (var writer = new StreamWriter(client))
                     {
-                        await writer.WriteLineAsync($"${_condaPath} activate ${_venvPath}");
+                        await writer.WriteLineAsync($"call {_condaPath} activate {_venvPath}");
                         foreach (var cmd in cmds)
                         {
                             await writer.WriteLineAsync(cmd);
@@ -95,7 +95,7 @@ namespace prism.infra.Runner
                         {
                             if (writer.BaseStream.CanWrite)
                             {
-                                writer.WriteLine(cmd);
+                                writer.WriteLine(cmd + Environment.NewLine);
                             }
                             else
                             {
@@ -103,8 +103,8 @@ namespace prism.infra.Runner
                             }
                         }
                     }
-                    
 
+                    StdOut = RunnerProcess.StandardOutput.ReadToEnd();
                     StdOut = await RunnerProcess.StandardOutput.ReadToEndAsync();
                     StdErr = await RunnerProcess.StandardError.ReadToEndAsync();
                     RunnerProcess.WaitForExit();
