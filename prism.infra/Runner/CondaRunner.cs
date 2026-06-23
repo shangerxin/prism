@@ -8,116 +8,65 @@ using System.Threading.Tasks;
 using System.IO.Pipes;
 using System.Threading;
 using System.Runtime.CompilerServices;
+using prism.infra.Extension;
+using prism.infra.Helper;
 
 namespace prism.infra.Runner
 {
-    public class CondaRunner : RunnerBase
+    public class CondaRunner : ScriptRunner
     {
-        protected string _pipeName;
         protected string _condaPath;
         protected string _venvPath;
-        protected void WorkerExecute(Func<Task> func)
-        {
-            var thread = new Thread(async () => await func());
-            thread.IsBackground = true;
-            thread.Start();
-            thread.Join();
-        }
+        protected List<string> _cmds;
+        protected string _activeCondaCmd;
 
-        public CondaRunner(string condaPath, string venvPath) : base("cmd.exe", new List<string>())
+        public CondaRunner(string condaPath, string venvPath, List<string> cmds = null, string workingDirectory = null) : base()
         {
-            RunnerStartInfo.RedirectStandardInput = true;
-            RunnerStartInfo.UseShellExecute = false;
-            _pipeName = "CondaRunnerPipe_" + Guid.NewGuid().ToString();
-            _condaPath = condaPath;
+            _condaPath = File.Exists(condaPath) ? condaPath : new DirectoryInfo(condaPath).GetFileInSystemPath();
             _venvPath = venvPath;
+            _cmds = cmds ?? new List<string>();
+
+            if(_condaPath == null || _venvPath == null)
+            {
+                throw new ArgumentException("Invalid conda or virtual environment path.");
+            }
+
+            _activeCondaCmd = $"call {_condaPath} activate {_venvPath}";
+            WorkingDirectory = workingDirectory;
         }
 
-        public async Task<int> ExecuteCmd(string cmd)
+        public int ExecuteCmd(string cmd, string workingDirectory = null)
         {
-            WorkerExecute(async () =>
-            {
-                using (var client = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
-                {
-                    await client.WaitForConnectionAsync();
-                    using (var writer = new StreamWriter(client))
-                    {
-                        await writer.WriteLineAsync($"call {_condaPath} activate {_venvPath}");
-                        await writer.WriteLineAsync(cmd);
-                        await writer.FlushAsync();
-                    }
-                }
-            });
-            await ExecuteAsync();
-            return ExitCode;
+            _cmds.Clear();
+            _cmds.Add(cmd);
+            WorkingDirectory = workingDirectory;
+            return Execute();
         }
 
-        public async Task<int> ExecuteCmds(List<string> cmds)
+        public int ExecuteCmds(List<string> cmds, string workingDirectory = null)
         {
-            WorkerExecute(async () =>
-            {
-                using (var client = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
-                {
-                    await client.WaitForConnectionAsync();
-                    using (var writer = new StreamWriter(client))
-                    {
-                        await writer.WriteLineAsync($"call {_condaPath} activate {_venvPath}");
-                        foreach (var cmd in cmds)
-                        {
-                            await writer.WriteLineAsync(cmd);
-                        }
-                        await writer.FlushAsync();
-                    }
-                }
-            });
-            await ExecuteAsync();
-            return ExitCode;
+            _cmds.Clear();
+            _cmds.AddRange(cmds);
+            WorkingDirectory = workingDirectory;
+            return Execute();
         }
 
         public override int Execute()
         {
-            if (IsExcussion)
+            if(_cmds.Count == 0)
             {
-                return ExitCode;
+                return 0;
             }
-
-            WorkerExecute(async () =>
+            _cmds.Insert(0, _activeCondaCmd);
+            using (var context = new TempDirectoryContext("CondaRunner"))
             {
-                using (RunnerProcess = Process.Start(RunnerStartInfo))
-                using (var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.Asynchronous))
-                using (var writer = RunnerProcess.StandardInput)
-                {
-                    await client.ConnectAsync();
-                    string cmd;
-                    using (var cmdReader = new StreamReader(client))
-                    {
-                        while ((cmd = await cmdReader.ReadLineAsync()) != null)
-                        {
-                            if (writer.BaseStream.CanWrite)
-                            {
-                                writer.WriteLine(cmd + Environment.NewLine);
-                            }
-                            else
-                            {
-                                Trace.WriteLine($"StandardInput is closed. Cannot write command. {cmd}");
-                            }
-                        }
-                    }
-
-                    StdOut = RunnerProcess.StandardOutput.ReadToEnd();
-                    StdOut = await RunnerProcess.StandardOutput.ReadToEndAsync();
-                    StdErr = await RunnerProcess.StandardError.ReadToEndAsync();
-                    RunnerProcess.WaitForExit();
-                    ExitCode = RunnerProcess.ExitCode;
-                }
-            });
-            return ExitCode;
+                var content = string.Join(Environment.NewLine, _cmds);
+                var bat = context.CreateFile("run.bat", content);
+                Executable = bat;
+                return base.Execute();
+            }
         }
 
-        public async Task<int> Exit(int exitCode=0)
-        {
-            return await ExecuteCmd($"exit {exitCode}");
-        }
     }
 }
 

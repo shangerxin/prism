@@ -10,11 +10,9 @@ namespace prism.infra.Helper
 {
     public class ScriptRunner: RunnerBase
     {
-        public ScriptRunner() : base() { }
-        public ScriptRunner(string executable, List<string> arguments) : base(executable, arguments)
-        {
-        }
-
+        public ScriptRunner() { }
+        public ScriptRunner(string executable, List<string> arguments = null, string workingDirectory = null): base(executable, arguments, workingDirectory) { }
+        
         public override int Execute()
         {
             RunnerProcess = new Process { StartInfo = RunnerStartInfo };

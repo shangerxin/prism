@@ -9,11 +9,11 @@ public class CondaRunnerTest
     protected static string condaPath = new DirectoryInfo("conda.bat").GetFileInSystemPath();
     protected static string venvPath = Path.Combine(solutionPath, "prism.web.service\\Venv");
     [TestMethod]
-    public async Task TestCondaRunnerExecuteCmd()
+    public void TestCondaRunnerExecuteCmd()
     {
         var runner = new CondaRunner(condaPath, venvPath);
-        await runner.ExecuteCmd("pip list");
-        Assert.IsNull(runner.StdErr);
+        runner.ExecuteCmd("pip list");
+        Assert.IsTrue(string.IsNullOrEmpty(runner.StdErr));
         Assert.Contains("pandas", runner.StdOut);
         Assert.AreEqual(0, runner.ExitCode);
     }

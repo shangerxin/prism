@@ -11,16 +11,18 @@ namespace prism.infra.Helper
     {
         private bool _isDisposed;
         private string _tempPath;
-        public TempDirectoryContext(string prefixName) {
+        public TempDirectoryContext(string prefixName)
+        {
             string tempPath = Path.GetTempPath();
-            _tempPath = Path.Combine(tempPath, prefixName);
+            _tempPath = Path.Combine(tempPath, "prism", prefixName, Guid.NewGuid().ToString());
             Directory.CreateDirectory(_tempPath);
         }
 
-        public string CreateFile(string fileName, string content, string encoding = "utf-8")
+        public string CreateFile(string fileName, string content, Encoding utf8WithoutBom = null)
         {
+            utf8WithoutBom = utf8WithoutBom ?? new UTF8Encoding(false);
             string filePath = Path.Combine(_tempPath, fileName);
-            File.WriteAllText(filePath, content, Encoding.GetEncoding(encoding));
+            File.WriteAllText(filePath, content, utf8WithoutBom);
             return filePath;
         }
 
