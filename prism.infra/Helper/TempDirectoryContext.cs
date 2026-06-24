@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,8 +19,15 @@ namespace prism.infra.Helper
             Directory.CreateDirectory(_tempPath);
         }
 
-        public string CreateFile(string fileName, string content, Encoding utf8WithoutBom = null)
+        public string CreateFile(string fileName, string content, Boolean isCreateEmptyFile=false, Encoding utf8WithoutBom = null)
         {
+            content = content ?? string.Empty;
+            if (string.IsNullOrEmpty(content) && !isCreateEmptyFile)
+            { 
+                Trace.WriteLine("Warning: Content is null or empty. File will not be created.");
+                return null;
+            }
+
             utf8WithoutBom = utf8WithoutBom ?? new UTF8Encoding(false);
             string filePath = Path.Combine(_tempPath, fileName);
             File.WriteAllText(filePath, content, utf8WithoutBom);

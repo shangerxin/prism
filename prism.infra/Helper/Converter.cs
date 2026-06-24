@@ -17,8 +17,13 @@ namespace prism.infra.Helper
     public static class Converter
     {
         //https://joshclose.github.io/CsvHelper/
-        public static string JsonToCsv(string json, string delimiter)
+        public static string JsonToCsv(string json)
         {
+            if(string.IsNullOrEmpty(json))
+            {
+                return string.Empty;
+            }
+
             StringWriter csvString = new StringWriter();
             using (CsvWriter csv = new CsvWriter(csvString, new CsvHelper.Configuration.CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)))
             {
@@ -43,8 +48,13 @@ namespace prism.infra.Helper
             return csvString.ToString();
         }
 
-        public static string CsvToJson(string csv, string delimiter, bool isWriteIndent = false, bool isCamelCase = false)
+        public static string CsvToJson(string csv, bool isWriteIndent = false, bool isCamelCase = false)
         {
+            if(string.IsNullOrEmpty(csv))
+            {
+                return string.Empty;
+            }
+
             var dynamicRecords = new List<dynamic>();
             using (var reader = new StringReader(csv))
             using (var csvReader = new CsvReader(reader, new CsvHelper.Configuration.CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)))

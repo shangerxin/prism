@@ -16,6 +16,12 @@ namespace prism.infra.WebAPI
             get { return (DashboardSettings)this["DashboardSettings"]; }
             set { this["DashboardSettings"] = value; }
         }
+        [ConfigurationProperty("PrismBinaryRoot", IsRequired = true)]
+        public PrismBinaryRoot PrismBinaryRoot
+        {
+            get { return (PrismBinaryRoot)this["PrismBinaryRoot"]; }
+            set { this["PrismBinaryRoot"] = value; }
+        }
     }
 
     public class DashboardSettings : ConfigurationElement
@@ -25,6 +31,16 @@ namespace prism.infra.WebAPI
         {
             get { return (int)this["DefaultTakeCount"]; }
             set { this["DefaultTakeCount"] = value; }
+        }
+    }
+
+    public class PrismBinaryRoot: ConfigurationElement
+    {
+        [ConfigurationProperty("Path", IsRequired = true)]
+        public string Path
+        {
+            get { return (string)this["Path"]; }
+            set { this["Path"] = value; }
         }
     }
 }

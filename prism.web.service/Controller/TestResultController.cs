@@ -145,7 +145,12 @@ namespace prism.web.service.Controller
 
         public async Task<List<BsonDocument>> GetResults(string projectName, string testJobName, List<string> buildGuids, string dataInfo)
         {
-            var queries = buildGuids.Select(x => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid = x, dataInfo })).ToList<string>();
+            var queries = buildGuids.Where(g => !string.IsNullOrEmpty(g)).Select(g => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid = g, dataInfo })).ToList<string>();
+            if(queries.Count == 0)
+            {
+                return new List<BsonDocument>();
+            }
+        
             var results = await resultDb.GetBsonResults(queries);
             return results;
         }
@@ -153,6 +158,10 @@ namespace prism.web.service.Controller
 
         public async Task<List<BsonDocument>> GetResults(string projectName, string testJobName, string dataInfo, string dataColumnName, string dataColumnValue)
         {
+            if(string.IsNullOrEmpty(dataColumnName) || string.IsNullOrEmpty(dataColumnValue))
+            {
+                return new List<BsonDocument>();
+            }
             var query = JsonSerializer.Serialize(new { projectName, testJobName, dataColumnName, dataColumnValue, dataInfo });
             var results = await resultDb.GetBsonResults(new List<string> { query });
             return results;

@@ -10,7 +10,7 @@ public class ConverterTest
     {
         string json = "[{\"Name\":\"John\",\"Age\":30},{\"Name\":\"Jane\",\"Age\":25}]";
         string expectedCsv = "Name,Age\r\nJohn,30\r\nJane,25\r\n";
-        string actualCsv = Converter.JsonToCsv(json, ",");
+        string actualCsv = Converter.JsonToCsv(json);
         Assert.AreEqual(expectedCsv, actualCsv);
     }
 
@@ -19,7 +19,7 @@ public class ConverterTest
     {
         string csv = "Name,Age\r\nJohn,30\r\nJane,25\r\n";
         string expectedJson = "[{\"Name\":\"John\",\"Age\":30},{\"Name\":\"Jane\",\"Age\":25}]";
-        string actualJson = Converter.CsvToJson(csv, ",", false, false);
+        string actualJson = Converter.CsvToJson(csv);
         Assert.AreEqual(expectedJson, actualJson);
     }
 }

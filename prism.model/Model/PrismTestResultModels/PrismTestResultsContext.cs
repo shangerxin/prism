@@ -130,9 +130,10 @@ namespace prism.web.service.Model
             else
             {
                 var jsonObj = json.AsObject();
-                jsonObj.Remove(dataColumnName);
-                jsonObj.Remove(dataColumnValue);
-                return await Get(collectionName, jsonObj.ToString());
+                jsonObj.Remove(dataColumnName?? string.Empty);
+                jsonObj.Remove(dataColumnValue?? string.Empty);
+                //return await Get(collectionName, jsonObj.ToString());
+                return await Get(collectionName, jsonObj.ToJsonString());
             }
         }
 

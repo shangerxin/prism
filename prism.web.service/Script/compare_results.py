@@ -345,7 +345,7 @@ def _convert_merged_column_value(result_df, method, is_revert, column_name, left
     else:
         raise ValueError(f"Unsupported compare method: {method}")
     
-    if is_convert_compare_as_value_to_test_state:
+    if is_convert_compare_as_value_to_test_state and method == CompareMethods.value.name:
         changed_index = set(result_df.index[result_df["_merge"] == CompareValueResults.changed.name].to_list())
         new_index = set(result_df.index[result_df["_merge"] == CompareValueResults.new.name].to_list())
         pass_index = set(result_df.index[result_df[f"{column_name}{left_suffix}"].str.contains("pass", na=False)].to_list())

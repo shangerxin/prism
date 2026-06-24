@@ -27,12 +27,14 @@ using System.Web.UI.WebControls;
 
 using prism.infra.WebAPI;
 using System.Configuration;
+using prism.infra.Runner;
 
 namespace prism.web.service.Controller
 {
     public class DashboardController : PrismControllerBase<Object>
     {
         protected int _defaultTakeCount = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).DashboardSettings.DefaultTakeCount;
+        protected string _prismBinaryRootPath = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).PrismBinaryRoot.Path;
         protected TestResultController _testResultController = new TestResultController();
         #region Protected
 
@@ -97,7 +99,7 @@ namespace prism.web.service.Controller
 
         protected void CalculateGeomean(BsonDocument result, List<string> colummnNames, List<string> addColumnNames)
         {
-            if(result == null)
+            if (result == null)
             {
                 return;
             }
@@ -377,8 +379,8 @@ namespace prism.web.service.Controller
             {
                 Enum.TryParse<ResultTypes>(resultType, out ResultTypes testResultType);
                 var buildGuids = (from build in managementDb.TestBuilds
-                                  where build.TestJob.name == testJobName && 
-                                  build.TestJob.Project.name == projectName && 
+                                  where build.TestJob.name == testJobName &&
+                                  build.TestJob.Project.name == projectName &&
                                   build.testResultId == (int)testResultType
                                   orderby build.startTime descending, build.timestamp descending
                                   select build.guid.ToString()).Take(DefaultTakeCount(count)).ToList();
@@ -432,28 +434,65 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/CompareResults")]
         public async Task<HttpResponseMessage> CompareResults([FromBody] QueryCompareModel query)
         {
-            var guidResults = (new List<string>() { query.BaseGuid, query.CompareGuid, query.ReferenceGuid }).Select(async g =>
-            {
-                if (string.IsNullOrEmpty(g))
-                {
-                    return null;
-                }
-                return await _testResultController.GetResults(query.ProjectName, query.TestJobName, new List<string>() { g }, query.DataInfo);
-            });
+            BsonDocument baseResult;
+            BsonDocument cmpResult;
+            BsonDocument refResult;
+            List<BsonDocument> baseResults;
+            List<BsonDocument> cmpResults;
+            List<BsonDocument> refResults;
 
-            if(guidResults.Count(r => r == null) == 3)
+            if (query.BaseGuid == null && query.CompareGuid == null && query.ReferenceGuid == null)
             {
-                var colBaseResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryBaseColumnValue);
-                var colCmpResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryCompareColumnValue);
-                var colRefResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryReferenceColumnValue);
-
-                if(colBaseResults.Count == 0 && colCmpResults.Count == 0 && colRefResults.Count == 0)
-                {
-                    return toResponse("No results found for the given query parameters.", HttpStatusCode.NotFound);
-                }
+                baseResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryBaseColumnValue);
+                cmpResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryCompareColumnValue);
+                refResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryReferenceColumnValue);
 
             }
-            return toResponse("Not Implemented", HttpStatusCode.NotImplemented);
+            else
+            {
+                var guidResults = new Dictionary<string, List<BsonDocument>>();
+                await Task.WhenAll(new List<string>() { query.BaseGuid, query.CompareGuid, query.ReferenceGuid }.Select(async g =>
+                {
+                    if (string.IsNullOrEmpty(g))
+                    {
+                        return;
+                    }
+                    var result = await _testResultController.GetResults(query.ProjectName, query.TestJobName, new List<string>() { g }, query.DataInfo);
+                    guidResults.Add(g, result);
+                }));
+                baseResults = guidResults.ContainsKey(query.BaseGuid) ? guidResults[query.BaseGuid] : new List<BsonDocument>();
+                cmpResults = guidResults.ContainsKey(query.CompareGuid) ? guidResults[query.CompareGuid] : new List<BsonDocument>();
+                refResults = guidResults.ContainsKey(query.ReferenceGuid) ? guidResults[query.ReferenceGuid] : new List<BsonDocument>();
+            }
+
+
+            if (baseResults.Count == 0 || (cmpResults.Count == 0 && refResults.Count == 0))
+            {
+                return toResponse("No results found for the given query parameters.", HttpStatusCode.NotFound);
+
+            }
+
+            baseResult = baseResults.FirstOrDefault();
+            cmpResult = cmpResults.FirstOrDefault();
+            refResult = refResults.FirstOrDefault();
+
+            var baseContent = Converter.JsonToCsv(baseResult?["data"].ToJson());
+            var cmpContent = Converter.JsonToCsv(cmpResult?["data"].ToJson());
+            var refContent = Converter.JsonToCsv(refResult?["data"].ToJson());
+
+            using(var context = new TempDirectoryContext("Dashbaord.CompareResults"))
+            {
+                var baseFile = context.CreateFile("base.csv", baseContent)?? Guid.NewGuid().ToString();
+                var cmpFile = context.CreateFile("compare.csv", cmpContent)?? Guid.NewGuid().ToString();
+                var refFile = context.CreateFile("reference.csv", refContent)?? Guid.NewGuid().ToString();
+               
+                var condaRunner = new CondaRunner("conda.bat", Path.Combine(_prismBinaryRootPath, "Venv"));
+                var output = Path.Combine(context.TempPath, "output.csv");
+                var cmd = query.ToCompareCommandLine(Path.Combine(_prismBinaryRootPath, "Script", "compare_results.py"), baseFile, cmpFile, refFile, output);
+                condaRunner.ExecuteCmd(cmd);
+                var json = Converter.CsvToJson(File.ReadAllText(output));
+                return toResponse(json);
+            }
         }
 
 
