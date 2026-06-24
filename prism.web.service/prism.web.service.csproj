@@ -302,9 +302,14 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controller\CredentialController.cs" />
     <Compile Include="Controller\DashboardController.cs" />
+    <Compile Include="Controller\GithubController.cs" />
+    <Compile Include="Controller\JenkinsController.cs" />
+    <Compile Include="Controller\JiraController.cs" />
     <Compile Include="Controller\PrismControllerBase.cs" />
     <Compile Include="Controller\ProjectController.cs" />
+    <Compile Include="Controller\TaskSchedualController.cs" />
     <Compile Include="Controller\TestResultController.cs" />
     <Compile Include="Controller\TestJobController.cs" />
     <Compile Include="Controller\TestBuildController.cs" />
@@ -316,10 +321,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <Content Include="Script\column_geo_mean.py" />
-    <Content Include="Script\gen_compare_result.py" />
+    <Content Include="Script\calc_col_geo_mean.py" />
+    <Content Include="Script\compare_results.py" />
     <Content Include="Script\sendmail.py" />
-    <Content Include="Script\utils.py" />
+    <Content Include="Script\calc_passrate.py" />
+    <Content Include="Script\calc_geomean.py" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

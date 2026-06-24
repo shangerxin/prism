@@ -25,22 +25,18 @@ using System.Web.Http;
 using System.Web.Http.Results;
 using System.Web.UI.WebControls;
 
+using prism.infra.WebAPI;
+using System.Configuration;
+
 namespace prism.web.service.Controller
 {
     public class DashboardController : PrismControllerBase<Object>
     {
-        protected int _defaultTakeCount = 50;
+        protected int _defaultTakeCount = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).DashboardSettings.DefaultTakeCount;
         protected TestResultController _testResultController = new TestResultController();
         #region Protected
-        protected class QueryResult
-        {
-            public string guid { get; set; }
-            public DateTime timestamp { get; set; }
-            public DateTime? startTime { get; set; }
-            public DateTime? endTime { get; set; }
-        }
 
-        protected void InsertTimeStamp(TimeInfoTypes timeInfo, IEnumerable<QueryResult> buildInfo, List<BsonDocument> results)
+        protected void InsertTimeStamp(TimeInfoTypes timeInfo, IEnumerable<QueryResultModel> buildInfo, List<BsonDocument> results)
         {
             string getTime(string guid)
             {
@@ -403,7 +399,7 @@ namespace prism.web.service.Controller
                 var buildInfo = (from build in managementDb.TestBuilds
                                  where build.TestJob.name == testJobName && build.TestJob.Project.name == projectName
                                  orderby build.startTime descending, build.timestamp descending
-                                 select new QueryResult { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(DefaultTakeCount(count)).ToList();
+                                 select new QueryResultModel { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(DefaultTakeCount(count)).ToList();
                 buildInfo.Reverse();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid).ToList(), dataInfo);
                 InsertTimeStamp(timeInfo, buildInfo, results);
@@ -424,7 +420,7 @@ namespace prism.web.service.Controller
                                  build.TestJob.Project.name == projectName &&
                                  build.startTime >= start && build.endTime <= end
                                  orderby build.startTime, build.timestamp
-                                 select new QueryResult { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
+                                 select new QueryResultModel { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
                 var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid).ToList(), dataInfo);
                 results = OrderBy(results, orderBy);
                 InsertTimeStamp(timeInfo, buildInfo, results);
