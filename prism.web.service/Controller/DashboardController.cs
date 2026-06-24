@@ -36,7 +36,19 @@ namespace prism.web.service.Controller
         protected int _defaultTakeCount = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).DashboardSettings.DefaultTakeCount;
         protected string _prismBinaryRootPath = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).PrismBinaryRoot.Path;
         protected TestResultController _testResultController = new TestResultController();
-        #region Protected
+        protected CondaRunner _conda;
+        protected CondaRunner Conda { 
+            get
+            {
+                if(_conda == null)
+                {
+                    _conda = new CondaRunner("conda.bat", Path.Combine(_prismBinaryRootPath, "Venv"));
+                }
+                return _conda;
+            }
+        }
+
+        #region Protected Methods
 
         protected void InsertTimeStamp(TimeInfoTypes timeInfo, IEnumerable<QueryResultModel> buildInfo, List<BsonDocument> results)
         {
@@ -486,15 +498,13 @@ namespace prism.web.service.Controller
                 var cmpFile = context.CreateFile("compare.csv", cmpContent)?? Guid.NewGuid().ToString();
                 var refFile = context.CreateFile("reference.csv", refContent)?? Guid.NewGuid().ToString();
                
-                var condaRunner = new CondaRunner("conda.bat", Path.Combine(_prismBinaryRootPath, "Venv"));
                 var output = Path.Combine(context.TempPath, "output.csv");
                 var cmd = query.ToCompareCommandLine(Path.Combine(_prismBinaryRootPath, "Script", "compare_results.py"), baseFile, cmpFile, refFile, output);
-                condaRunner.ExecuteCmd(cmd);
+                Conda.ExecuteCmd(cmd);
                 var json = Converter.CsvToJson(File.ReadAllText(output));
                 return toResponse(json);
             }
         }
-
 
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, [FromBody] ResultQueryModel query, string orderBy = null)
         {
