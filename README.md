@@ -50,6 +50,8 @@ These endpoints are used by `prism.client`:
 3. Test the Web API with Swagger UI or Postman.
 4. You can also use test requests under `prism.model.Test/Fixtures/prism-test-requests.json`.
 5. Use the `TestManagementDBEntities` connection string in `prism.web.service/Web.config` to switch the target database (for example, `initial catalog=TestManagementDBTest`).
+6. Install chrome extesion Talend API Tester to test the reset APIs
+
 
 ## Use prism.client to Upload Test Result
 `prism.client` is included as a git submodule. The Python client script is:

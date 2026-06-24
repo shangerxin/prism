@@ -428,6 +428,35 @@ namespace prism.web.service.Controller
             }
         }
 
+        [HttpPost]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/CompareResults")]
+        public async Task<HttpResponseMessage> CompareResults([FromBody] QueryCompareModel query)
+        {
+            var guidResults = (new List<string>() { query.BaseGuid, query.CompareGuid, query.ReferenceGuid }).Select(async g =>
+            {
+                if (string.IsNullOrEmpty(g))
+                {
+                    return null;
+                }
+                return await _testResultController.GetResults(query.ProjectName, query.TestJobName, new List<string>() { g }, query.DataInfo);
+            });
+
+            if(guidResults.Count(r => r == null) == 3)
+            {
+                var colBaseResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryBaseColumnValue);
+                var colCmpResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryCompareColumnValue);
+                var colRefResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryReferenceColumnValue);
+
+                if(colBaseResults.Count == 0 && colCmpResults.Count == 0 && colRefResults.Count == 0)
+                {
+                    return toResponse("No results found for the given query parameters.", HttpStatusCode.NotFound);
+                }
+
+            }
+            return toResponse("Not Implemented", HttpStatusCode.NotImplemented);
+        }
+
+
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, [FromBody] ResultQueryModel query, string orderBy = null)
         {
             using (managementDb)

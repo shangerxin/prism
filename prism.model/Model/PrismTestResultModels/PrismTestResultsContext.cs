@@ -94,7 +94,7 @@ namespace prism.web.service.Model
             {
                 return null;
             }
-            var bsonFilter = BsonDocument.Parse(filter);
+            var bsonFilter = string.IsNullOrEmpty(filter)? Builders<BsonDocument>.Filter.Empty:  BsonDocument.Parse(filter);
             return await collection.Find(bsonFilter).ToListAsync();
         }
 
@@ -104,12 +104,36 @@ namespace prism.web.service.Model
             var projectName = json["projectName"]?.GetValue<string>();
             var testJobName = json["testJobName"]?.GetValue<string>();
             var buildGuid = json["buildGuid"]?.GetValue<string>();
-            if (projectName == null || testJobName == null || buildGuid == null)
+            var dataColumnName = json["dataColumnName"]?.GetValue<string>();
+            var dataColumnValue = json["dataColumnValue"]?.GetValue<string>();
+
+            if (projectName == null || testJobName == null || (buildGuid == null && (dataColumnName == null || dataColumnValue == null)))
             {
                 throw new Exception("The fields, project name, test job name or guid is null.");
             }
             var collectionName = $@"{projectName}.{testJobName}.{collectionTrailName}";
-            return await Get(collectionName, filter);
+
+            if(buildGuid == null)
+            {
+                var results = await Get(collectionName, null);
+                return results.Where(r =>
+                {
+                    var data = r.GetValue("data", null);
+                    if(data == null)
+                    {
+                        return false;
+                    }
+
+                    return data.AsBsonArray.Any(item => item.AsBsonDocument.GetValue(dataColumnName, null)?.AsString == dataColumnValue);
+                }).ToList();
+            }
+            else
+            {
+                var jsonObj = json.AsObject();
+                jsonObj.Remove(dataColumnName);
+                jsonObj.Remove(dataColumnValue);
+                return await Get(collectionName, jsonObj.ToString());
+            }
         }
 
         protected async Task<bool> Delete(string collectionName, string filter)

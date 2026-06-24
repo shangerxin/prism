@@ -1,39 +1,126 @@
-﻿using System;
+﻿using prism.model.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 namespace prism.web.service.Controller
 {
-    public class CredentialController : ApiController
+    public class CredentialController : PrismControllerBase<UserCredential>
     {
-        // GET api/<controller>
-        public IEnumerable<string> Get()
+        protected Boolean IsValideCredential(UserCredential credential)
         {
-            return new string[] { "value1", "value2" };
+            if (credential == null)
+            {
+                return false;
+            }
+            if (string.IsNullOrEmpty(credential.userName) || 
+                (string.IsNullOrEmpty(credential.password) && 
+                string.IsNullOrEmpty(credential.token)))
+            {
+                return false;
+            }
+            return true;
         }
 
-        // GET api/<controller>/5
-        public string Get(int id)
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Credential/Get/")]
+        public async Task<IEnumerable<UserCredential>> Get()
         {
-            return "value";
+            using (managementDb)
+            {
+                return (from x in managementDb.UserCredentials select x).ToList();
+            }
         }
 
-        // POST api/<controller>
-        public void Post([FromBody] string value)
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Credential/Get/{id}")]
+        public async Task<UserCredential> Get(int id)
         {
+            using (managementDb)
+            {
+                var result = (from x in managementDb.UserCredentials
+                             where x.id == id
+                             select x).FirstOrDefault();
+
+                return result;
+            }
         }
 
-        // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
+        [HttpPost]
+        [Route(ServiceHelper.ApiPrefix + "/Credential/")]
+        public int Post([FromBody] UserCredential value)
         {
+            if (IsValideCredential(value))
+            {
+                using(managementDb)
+                {
+                    managementDb.UserCredentials.Add(value);
+                    managementDb.SaveChanges();
+                    return value.id;
+                }
+            }
+            else
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.BadRequest);
+                response.Content = new StringContent("Invalide user credential");
+                throw new HttpResponseException(response);
+            }
         }
 
-        // DELETE api/<controller>/5
+        [HttpPut]
+        [Route(ServiceHelper.ApiPrefix + "/Credential/")]
+        public void Put(int id, [FromBody] UserCredential value)
+        {
+            var credential = (from x in managementDb.UserCredentials
+                              where x.userName == value.userName &&
+                                    x.createdby == value.createdby &&
+                                    x.scope == value.scope
+                              select x).FirstOrDefault();
+            if (credential == null)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound);
+                response.Content = new StringContent("User credential not found");
+                throw new HttpResponseException(response);
+
+            }
+            else
+            {
+                credential.password = value.password;
+                credential.token = value.token;
+                credential.description = value.description;
+                managementDb.SaveChanges();
+            }
+        }
+
+        [HttpDelete]
+        [Route(ServiceHelper.ApiPrefix + "/Credential/{id}")]
         public void Delete(int id)
         {
+            var credential = (from x in managementDb.UserCredentials
+                              where x.id == id
+                              select x).FirstOrDefault();
+            if (credential == null)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound);
+                response.Content = new StringContent("User credential not found");
+                throw new HttpResponseException(response);
+            }
+            else
+            {
+                managementDb.UserCredentials.Remove(credential);
+                managementDb.SaveChanges();
+            }
+        }
+
+        protected override object ToSerizalizable(UserCredential x)
+        {
+            return x;
         }
     }
 }

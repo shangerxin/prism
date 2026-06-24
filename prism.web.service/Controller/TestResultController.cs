@@ -3,6 +3,7 @@ using prism.model.Model;
 using prism.web.service.Model;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -146,6 +147,14 @@ namespace prism.web.service.Controller
         {
             var queries = buildGuids.Select(x => JsonSerializer.Serialize(new { projectName, testJobName, buildGuid = x, dataInfo })).ToList<string>();
             var results = await resultDb.GetBsonResults(queries);
+            return results;
+        }
+
+
+        public async Task<List<BsonDocument>> GetResults(string projectName, string testJobName, string dataInfo, string dataColumnName, string dataColumnValue)
+        {
+            var query = JsonSerializer.Serialize(new { projectName, testJobName, dataColumnName, dataColumnValue, dataInfo });
+            var results = await resultDb.GetBsonResults(new List<string> { query });
             return results;
         }
 
