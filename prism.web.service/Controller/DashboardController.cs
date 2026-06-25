@@ -224,14 +224,14 @@ namespace prism.web.service.Controller
             List<string> buildGuids = null;
             if (String.IsNullOrEmpty(orderBy))
             {
-                buildGuids = (from build in managementDb.TestBuilds
+                buildGuids = (from build in ManagementDb.TestBuilds
                               where build.TestJob.name == testJobName && build.TestJob.Project.name == projectName
                               orderby build.startTime descending, build.timestamp descending
                               select build.guid.ToString()).Take(count).ToList();
             }
             else
             {
-                buildGuids = (from build in managementDb.TestBuilds
+                buildGuids = (from build in ManagementDb.TestBuilds
                               where build.TestJob.name == testJobName && build.TestJob.Project.name == projectName
                               orderby build.startTime descending, build.timestamp descending
                               select build.guid.ToString()).Take(DefaultTakeCount(count)).ToList();
@@ -252,9 +252,9 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetDataColumnValues/{projectName}/{testJobName}/{dataInfo}/{columnName}/{isUnique}")]
         public async Task<HttpResponseMessage> GetDataColumnValues(string projectName, string testJobName, string dataInfo, string columnName, bool isUnique)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuids = (from build in ManagementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
                                   build.TestJob.Project.name == projectName
                                   orderby build.startTime, build.timestamp
@@ -280,9 +280,9 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetDataColumnValues/{projectName}/{testJobName}/{dataInfo}/{columnName}/{isUnique}/{start}/{end}")]
         public async Task<HttpResponseMessage> GetDataColumnValues(string projectName, string testJobName, string dataInfo, string columnName, bool isUnique, DateTime start, DateTime end)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuids = (from build in ManagementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
                                   build.TestJob.Project.name == projectName &&
                                   build.startTime >= start && build.startTime <= end
@@ -311,9 +311,9 @@ namespace prism.web.service.Controller
         {
             List<string> names = columnNames.SplitToList();
             List<string> addNames = addColumnNames.SplitToList();
-            using (managementDb)
+            using (ManagementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuids = (from build in ManagementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
                                   build.TestJob.Project.name == projectName &&
                                   build.startTime >= start && build.endTime <= end
@@ -332,7 +332,7 @@ namespace prism.web.service.Controller
         {
             List<string> names = columnNames.SplitToList();
             List<string> addNames = addColumnNames.SplitToList();
-            using (managementDb)
+            using (ManagementDb)
             {
                 List<string> buildGuids = GetBuildGuids(projectName, testJobName, orderBy);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
@@ -348,7 +348,7 @@ namespace prism.web.service.Controller
         {
             List<string> names = columnNames.SplitToList();
             List<string> addNames = addColumnNames.SplitToList();
-            using (managementDb)
+            using (ManagementDb)
             {
                 List<string> buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
@@ -364,9 +364,9 @@ namespace prism.web.service.Controller
         {
             List<string> names = columnNames.SplitToList();
             List<string> addNames = addColumnNames.SplitToList();
-            using (managementDb)
+            using (ManagementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuids = (from build in ManagementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
                                   build.startTime >= start && build.endTime <= end &&
                                   build.TestJob.Project.name == projectName
@@ -385,7 +385,7 @@ namespace prism.web.service.Controller
         {
             List<string> names = columnNames.SplitToList();
             List<string> addNames = addColumnNames.SplitToList();
-            using (managementDb)
+            using (ManagementDb)
             {
                 var buildGuids = GetBuildGuids(projectName, testJobName, orderBy);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
@@ -401,7 +401,7 @@ namespace prism.web.service.Controller
         {
             List<string> names = columnNames.SplitToList();
             List<string> addNames = addColumnNames.SplitToList();
-            using (managementDb)
+            using (ManagementDb)
             {
                 var buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
@@ -415,9 +415,9 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetResults/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{orderBy?}")]
         public async Task<HttpResponseMessage> GetResults(string projectName, string testJobName, string dataInfo, DateTime start, DateTime end, string orderBy = null)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuids = (from build in ManagementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
                                   build.TestJob.Project.name == projectName &&
                                   build.startTime >= start && build.endTime <= end
@@ -433,7 +433,7 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/{orderBy?}")]
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string orderBy = null)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
                 var buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
@@ -446,10 +446,10 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{resultType}/{count}/{orderBy?}")]
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, string resultType, int count, string orderBy = null)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
                 Enum.TryParse<ResultTypes>(resultType, out ResultTypes testResultType);
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuids = (from build in ManagementDb.TestBuilds
                                   where build.TestJob.name == testJobName &&
                                   build.TestJob.Project.name == projectName &&
                                   build.testResultId == (int)testResultType
@@ -467,9 +467,9 @@ namespace prism.web.service.Controller
         public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, int count, string orderBy = null)
         {
             Enum.TryParse<TimeInfoTypes>(insertTimeInfo, out TimeInfoTypes timeInfo);
-            using (managementDb)
+            using (ManagementDb)
             {
-                var buildInfo = (from build in managementDb.TestBuilds
+                var buildInfo = (from build in ManagementDb.TestBuilds
                                  where build.TestJob.name == testJobName && build.TestJob.Project.name == projectName
                                  orderby build.startTime descending, build.timestamp descending
                                  select new QueryResultModel { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime }).Take(DefaultTakeCount(count)).ToList();
@@ -486,9 +486,9 @@ namespace prism.web.service.Controller
         public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, DateTime start, DateTime end, string orderBy = null)
         {
             Enum.TryParse<TimeInfoTypes>(insertTimeInfo, out TimeInfoTypes timeInfo);
-            using (managementDb)
+            using (ManagementDb)
             {
-                var buildInfo = (from build in managementDb.TestBuilds
+                var buildInfo = (from build in ManagementDb.TestBuilds
                                  where build.TestJob.name == testJobName &&
                                  build.TestJob.Project.name == projectName &&
                                  build.startTime >= start && build.endTime <= end
@@ -567,10 +567,10 @@ namespace prism.web.service.Controller
 
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string resultType, [FromBody] ResultQueryModel query, string orderBy = null)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
                 Enum.TryParse<ResultTypes>(resultType, out ResultTypes testResultType);
-                var buildGuids = (from build in managementDb.TestBuilds
+                var buildGuids = (from build in ManagementDb.TestBuilds
                                   where build.TestJob.name == testJobName && build.testResultId == (int)testResultType
                                   orderby build.timestamp descending
                                   select build.guid.ToString()).Take(count).ToList();

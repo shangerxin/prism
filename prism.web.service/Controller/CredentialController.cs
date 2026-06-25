@@ -31,9 +31,9 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Credential/Get/")]
         public async Task<IEnumerable<UserCredential>> Get()
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                return (from x in managementDb.UserCredentials select x).ToList();
+                return (from x in ManagementDb.UserCredentials select x).ToList();
             }
         }
 
@@ -42,9 +42,9 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Credential/Get/{id}")]
         public async Task<UserCredential> Get(int id)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var result = (from x in managementDb.UserCredentials
+                var result = (from x in ManagementDb.UserCredentials
                              where x.id == id
                              select x).FirstOrDefault();
 
@@ -58,10 +58,10 @@ namespace prism.web.service.Controller
         {
             if (IsValideCredential(value))
             {
-                using(managementDb)
+                using(ManagementDb)
                 {
-                    managementDb.UserCredentials.Add(value);
-                    managementDb.SaveChanges();
+                    ManagementDb.UserCredentials.Add(value);
+                    ManagementDb.SaveChanges();
                     return value.id;
                 }
             }
@@ -77,7 +77,7 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Credential/")]
         public void Put(int id, [FromBody] UserCredential value)
         {
-            var credential = (from x in managementDb.UserCredentials
+            var credential = (from x in ManagementDb.UserCredentials
                               where x.userName == value.userName &&
                                     x.createdby == value.createdby &&
                                     x.scope == value.scope
@@ -94,7 +94,7 @@ namespace prism.web.service.Controller
                 credential.password = value.password;
                 credential.token = value.token;
                 credential.description = value.description;
-                managementDb.SaveChanges();
+                ManagementDb.SaveChanges();
             }
         }
 
@@ -102,7 +102,7 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/Credential/{id}")]
         public void Delete(int id)
         {
-            var credential = (from x in managementDb.UserCredentials
+            var credential = (from x in ManagementDb.UserCredentials
                               where x.id == id
                               select x).FirstOrDefault();
             if (credential == null)
@@ -113,8 +113,8 @@ namespace prism.web.service.Controller
             }
             else
             {
-                managementDb.UserCredentials.Remove(credential);
-                managementDb.SaveChanges();
+                ManagementDb.UserCredentials.Remove(credential);
+                ManagementDb.SaveChanges();
             }
         }
 

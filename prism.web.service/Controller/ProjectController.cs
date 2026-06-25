@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace prism.web.service.Controller
 {
@@ -15,74 +16,79 @@ namespace prism.web.service.Controller
         {
         }
 
-        public string Get() {
-            using (managementDb)
+        public async Task<HttpResponseMessage> Get() {
+            using (ManagementDb)
             {
-                var projects = managementDb.Projects.ToList();
-                return JsonSerializer.Serialize(projects.Select(p => ToSerizalizable(p)));
+                var projects = ManagementDb.Projects.Select(p => ToSerizalizable(p));
+                var content = JsonSerializer.Serialize(projects);
+                return toResponse(content);
             }
         }
 
         // GET: api/v{apiVersion}/Project/5
         public string Get(int id)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var project = managementDb.Projects.Where(p => p.id == id).FirstOrDefault();
+                var project = ManagementDb.Projects.Where(p => p.id == id).FirstOrDefault();
                 return Serizalize(project);
             }
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Project/Id/{name}")]      
-        public string Id(string name)
+        public async Task<HttpResponseMessage> Id(string name)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                return managementDb.Projects.Where(p => p.name == name).FirstOrDefault()?.id.ToString();
+                var project = ManagementDb.Projects.Where(p => p.name == name).FirstOrDefault();
+                var content = project?.id.ToString();
+                return toResponse(content);
             }
         }
 
         // POST: api/v{apiVersion}/Project
-        public Project Post([FromBody]string value)
+        public async Task<HttpResponseMessage> Post([FromBody]string value)
         {
-            using (managementDb) {
+            using (ManagementDb) {
                 var project = JsonSerializer.Deserialize<Project>(value);
-                managementDb.Projects.Add(project);
-                managementDb.SaveChanges();
-                return project;
+                ManagementDb.Projects.Add(project);
+                ManagementDb.SaveChanges();
+                return toResponse(Serizalize(project));
             }   
         }
 
         // PUT: api/v{apiVersion}/Project/5
-        public bool Put(int id, [FromBody]string value)
+        public async Task<HttpResponseMessage> Put(int id, [FromBody]string value)
         {
-            using (managementDb) {
+            using (ManagementDb) {
                 var project = JsonSerializer.Deserialize<Project>(value);
-                var existingProject = managementDb.Projects.SingleOrDefault(p => p.id == id || p.name == project.name);
+                var existingProject = ManagementDb.Projects.SingleOrDefault(p => p.id == id || p.name == project.name);
                 if (existingProject != null)
                 {
                     existingProject.name = project.name;
                     existingProject.description = project.description;
                     existingProject.productId = project.productId;
-                    managementDb.SaveChanges();
-                    return true;
+                    ManagementDb.SaveChanges();
+                    return ResponseOK;
                 }
             }
-            return false;
+            return ResponseNotFound;
         }
 
         // DELETE: api/v{apiVersion}/Project/5
-        public void Delete(int id)
+        public async Task<HttpResponseMessage> Delete(int id)
         {
-            using (managementDb) {
-                var project = managementDb.Projects.SingleOrDefault(p => p.id == id);
+            using (ManagementDb) {
+                var project = ManagementDb.Projects.SingleOrDefault(p => p.id == id);
                 if (project != null)
                 {
-                    managementDb.Projects.Remove(project);
-                    managementDb.SaveChanges();
+                    ManagementDb.Projects.Remove(project);
+                    ManagementDb.SaveChanges();
+                    return ResponseOK;
                 }
             }
+            return ResponseNotFound;
         }
 
         protected override object ToSerizalizable(Project x)
