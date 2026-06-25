@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace prism.infra.WebAPI
 {
-    public class QueryCompareModel: QueryModelBase
+    public class QueryCompareModel : QueryModelBase
     {
 
         [JsonRequired]
@@ -19,13 +19,125 @@ namespace prism.infra.WebAPI
         public string TestJobName { get; set; }
         [JsonRequired]
         public string DataInfo { get; set; }
-        public string BaseGuid { get; set; }
-        public string CompareGuid { get; set; }
-        public string ReferenceGuid { get; set; }
+
+        protected string _baseGuid;
+        public string BaseGuid
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_baseGuid))
+                {
+                    if (Guids.Length > 0)
+                    {
+                        _baseGuid = Guids[0];
+                    }
+                }
+                return _baseGuid;
+            }
+            set
+            {
+                _baseGuid = value;
+            }
+        }
+        protected string _compareGuid;
+        public string CompareGuid
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_compareGuid))
+                {
+                    if (Guids.Length > 1)
+                    {
+                        _compareGuid = Guids[1];
+                    }
+                }
+                return _compareGuid;
+            }
+            set
+            {
+                _compareGuid = value;
+            }
+        }
+
+        protected string _referenceGuid;
+        public string ReferenceGuid
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_referenceGuid))
+                {
+                    if (Guids.Length > 2)
+                    {
+                        _referenceGuid = Guids[2];
+                    }
+                }
+                return _referenceGuid;
+            }
+
+            set
+            {
+                _referenceGuid = value;
+            }
+        }
+        public string[] Guids { get; set; } = new string[0];
         public string QueryColumnName { get; set; }
-        public string QueryBaseColumnValue { get; set; }
-        public string QueryCompareColumnValue { get; set; }
-        public string QueryReferenceColumnValue { get; set; }
+        protected string _queryBaseColumnValue;
+        public string QueryBaseColumnValue
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_queryBaseColumnValue))
+                {
+                    if (ColumnValues.Length > 0)
+                    {
+                        _queryBaseColumnValue = ColumnValues[0];
+                    }
+                }
+                return _queryBaseColumnValue;
+            }
+            set
+            {
+                _queryBaseColumnValue = value;
+            }
+        }
+
+        protected string _queryCompareColumnValue;
+        public string QueryCompareColumnValue {
+            get
+            {
+                if (string.IsNullOrEmpty(_queryCompareColumnValue))
+                {
+                    if (ColumnValues.Length > 1)
+                    {
+                        _queryCompareColumnValue = ColumnValues[1];
+                    }
+                }
+                return _queryCompareColumnValue;
+            }
+            set
+            {
+                _queryCompareColumnValue = value;
+            }
+        }
+        protected string _queryReferenceColumnValue;
+        public string QueryReferenceColumnValue {
+            get
+            {
+                if (string.IsNullOrEmpty(_queryReferenceColumnValue))
+                {
+                    if (ColumnValues.Length > 2)
+                    {
+                        _queryReferenceColumnValue = ColumnValues[2];
+                    }
+                }
+                return _queryReferenceColumnValue;
+            }
+            set
+            {
+                _queryReferenceColumnValue = value;
+            }
+        }
+        public string[] ColumnValues { get; set; } = new string[0];
         [JsonRequired]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public QueryCompareMethodTypes Method { get; set; }
@@ -52,12 +164,12 @@ namespace prism.infra.WebAPI
         public string Option<T>(string option, T value)
         {
             string optionValue = null;
-            if(value is ICollection)
+            if (value is ICollection)
             {
                 var collection = value as ICollection;
                 optionValue = string.Join(" ", collection.Cast<object>()).Trim();
             }
-            else if(value is Boolean)
+            else if (value is Boolean)
             {
                 if ((bool)(object)value)
                 {

@@ -33,6 +33,7 @@ namespace prism.web.service.Controller
 {
     public class DashboardController : PrismControllerBase<Object>
     {
+        #region Fields
         protected int _defaultTakeCount = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).DashboardSettings.DefaultTakeCount;
         protected string _prismBinaryRootPath = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).PrismBinaryRoot.Path;
         protected TestResultController _testResultController = new TestResultController();
@@ -47,6 +48,7 @@ namespace prism.web.service.Controller
                 return _conda;
             }
         }
+        #endregion
 
         #region Protected Methods
 
@@ -245,6 +247,63 @@ namespace prism.web.service.Controller
 
 
         #endregion
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetDataColumnValues/{projectName}/{testJobName}/{dataInfo}/{columnName}/{isUnique}")]
+        public async Task<HttpResponseMessage> GetDataColumnValues(string projectName, string testJobName, string dataInfo, string columnName, bool isUnique)
+        {
+            using (managementDb)
+            {
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName &&
+                                  build.TestJob.Project.name == projectName
+                                  orderby build.startTime, build.timestamp
+                                  select build.guid.ToString()).ToList();
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                if (results.Count > 0 && IsContains(results, columnName))
+                {
+                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Select(d => d[columnName].ToString()));
+                    if (isUnique)
+                    {
+                        values = values.Distinct();
+                    }
+                    return toResponse(values.ToJson());
+                }
+                else
+                {
+                    return toResponse(new List<string>().ToJson());
+                }
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetDataColumnValues/{projectName}/{testJobName}/{dataInfo}/{columnName}/{isUnique}/{start}/{end}")]
+        public async Task<HttpResponseMessage> GetDataColumnValues(string projectName, string testJobName, string dataInfo, string columnName, bool isUnique, DateTime start, DateTime end)
+        {
+            using (managementDb)
+            {
+                var buildGuids = (from build in managementDb.TestBuilds
+                                  where build.TestJob.name == testJobName &&
+                                  build.TestJob.Project.name == projectName &&
+                                  build.startTime >= start && build.startTime <= end
+                                  orderby build.startTime, build.timestamp
+                                  select build.guid.ToString()).ToList();
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                if (results.Count > 0 && IsContains(results, columnName))
+                {
+                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Select(d => d[columnName].ToString()));
+                    if (isUnique)
+                    {
+                        values = values.Distinct();
+                    }
+                    return toResponse(values.ToJson());
+                }
+                else
+                {
+                    return toResponse(new List<string>().ToJson());
+                }
+            }
+        }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetGeomeans/{projectName}/{testJobName}/{dataInfo}/{start}/{end}/{columnNames}/{addColumnNames?}/{orderBy?}")]
