@@ -1,1 +1,0 @@
-dotnet publish -p:PublishProfile="..\prism.web.service\Properties\PublishProfiles\FolderProfile.pubxml"

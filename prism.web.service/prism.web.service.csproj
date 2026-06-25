@@ -398,12 +398,12 @@
     <PreBuildEvent>
 if not exist "$(ProjectDir)obj\$(Configuration)\$(TargetName).pdb" (
     echo [INFO] This is a CLEAN BUILD / REBUILD.
-    xcopy $(ProjectDir)Venv $(TargetDir)Venv /S /C /I /H /R /Y
-    xcopy $(ProjectDir)Script $(TargetDir)Script /S /C /I /H /R /Y
+    xcopy $(ProjectDir)\Venv $(TargetDir)\Venv /S /C /I /H /R /Y
+    xcopy $(ProjectDir)\Script $(TargetDir)\Script /S /C /I /H /R /Y
 ) else (
     echo [INFO] This is an INCREMENTAL BUILD.
-    if not exist $(TargetDir)\Venv xcopy $(ProjectDir)\Venv $(TargetDir)Venv /S /C /I /H /R /Y
-    if not exist $(TargetDir)\Script xcopy $(ProjectDir)\Script $(TargetDir)Script /S /C /I /H /R /Y
+    if not exist $(TargetDir)\Venv xcopy $(ProjectDir)\Venv $(TargetDir)\Venv /S /C /I /H /R /Y
+    if not exist $(TargetDir)\Script xcopy $(ProjectDir)\Script $(TargetDir)\Script /S /C /I /H /R /Y
 )</PreBuildEvent>
   </PropertyGroup>
 </Project>

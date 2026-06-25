@@ -13,6 +13,10 @@
 # Conda Venv 
 prism.web.service/[vV]env/
 
+
+# Publish folder 
+prism.web.service/PrismPublishedFiles/
+
 # Submodules
 prism.client/
 
