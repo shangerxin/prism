@@ -1,4 +1,7 @@
 echo @off
+echo usages:
+echo build [PrismSourceRoot] [PrismPublishedBinRoot]
+
 echo Build WebAPI at the root of Prism solution
 if "%1"=="" (
 	set PrismSourceRoot=%~dp0\..
