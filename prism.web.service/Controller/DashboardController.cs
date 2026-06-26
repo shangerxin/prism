@@ -314,7 +314,7 @@ namespace prism.web.service.Controller
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
                 if (results.Count > 0 && IsAnyContains(results, columnName))
                 {
-                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Where(d=>d.Contains(columnName)).Select(d => d[columnName].ToString()));
+                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Where(d => d.Contains(columnName)).Select(d => d[columnName].ToString()));
                     if (isUnique)
                     {
                         values = values.Distinct();
@@ -474,7 +474,7 @@ namespace prism.web.service.Controller
             {
                 var buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                results = OrderBy(results.Where(r=>IsAnyContains(r, columnName, values)).ToList(), orderBy).Take(count).ToList();
+                results = OrderBy(results.Where(r => IsAnyContains(r, columnName, values)).ToList(), orderBy).Take(count).ToList();
                 return toResponse(results.ToJson());
             }
         }

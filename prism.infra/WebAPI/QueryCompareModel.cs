@@ -102,7 +102,8 @@ namespace prism.infra.WebAPI
         }
 
         protected string _queryCompareColumnValue;
-        public string QueryCompareColumnValue {
+        public string QueryCompareColumnValue
+        {
             get
             {
                 if (string.IsNullOrEmpty(_queryCompareColumnValue))
@@ -120,7 +121,8 @@ namespace prism.infra.WebAPI
             }
         }
         protected string _queryReferenceColumnValue;
-        public string QueryReferenceColumnValue {
+        public string QueryReferenceColumnValue
+        {
             get
             {
                 if (string.IsNullOrEmpty(_queryReferenceColumnValue))
@@ -141,9 +143,47 @@ namespace prism.infra.WebAPI
         [JsonRequired]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public QueryCompareMethodTypes Method { get; set; }
-        public string BaseSuffix { get; set; } = "_base";
-        public string CompareSuffix { get; set; } = "_cmp";
-        public string ReferenceSuffix { get; set; } = "_ref";
+        protected string _baseSuffix;
+        public string BaseSuffix
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_baseSuffix))
+                {
+                    _baseSuffix = QueryBaseColumnValue ?? "_base";
+                }
+                return _baseSuffix;
+            }
+            set { _baseSuffix = value; }
+        }
+
+        protected string _compareSuffix;
+        public string CompareSuffix
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_compareSuffix))
+                {
+                    _compareSuffix = QueryCompareColumnValue ?? "_cmp";
+                }
+                return _compareSuffix;
+            }
+            set { _compareSuffix = value; }
+        }
+
+        protected string _referenceSuffix;
+        public string ReferenceSuffix
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_referenceSuffix))
+                {
+                    _referenceSuffix = QueryReferenceColumnValue ?? "_ref";
+                }
+                return _referenceSuffix;
+            }
+            set { _referenceSuffix = value; }
+        }
         [JsonRequired]
         public int[] CompareColumnIndexes { get; set; } = new int[0];
         [JsonRequired]
