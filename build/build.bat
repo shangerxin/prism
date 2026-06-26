@@ -17,8 +17,9 @@ if "%2"=="" (
 
 echo Prism solution root %PrismSourceRoot%
 pushd %PrismSourceRoot%
-dotnet restore --configfile build\nuget.config
+msbuild -t:restore /p:SolutionDir .\Prism.slnx  -p:RestorePackagesConfig=true -p:RestoreConfigFile=build\nuget.config
 pushd %PrismSourceRoot%\prism.web.service
+msbuild -t:restore /p:SolutionDir .\prism.web.service.csproj  -p:RestorePackagesConfig=true -p:RestoreConfigFile=..\build\nuget.config
 if exist Properties\PublishProfiles\FolderProfile.pubxml copy Properties\PublishProfiles\FolderProfile.pubxml* %PrismSourceRoot%\build
 set PublishDir=PrismPublishedFiles
 msbuild /p:DeployOnBuild=true /p:Configuration=Debug  /p:PublishProfile=..\build\FolderProfile.pubxml /p:PreBuildEvent= /p:PostBuildEvent=
