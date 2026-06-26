@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/build/">
     <File Path="build/build.bat" />
+    <File Path="build/FolderProfile.pubxml" />
+    <File Path="build/FolderProfile.pubxml.user" />
+    <File Path="build/nuget.config" />
   </Folder>
   <Folder Name="/client/">
     <Project Path="prism.client/prism.client.python/prism.client.python.pyproj" Type="888888a0-9f3d-457c-b088-3a5042f75d52" Id="9ab46758-5e96-4874-86e5-35c434390d75">

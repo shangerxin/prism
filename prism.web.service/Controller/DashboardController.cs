@@ -96,15 +96,25 @@ namespace prism.web.service.Controller
         {
             return IsContains(new List<BsonDocument> { result }, columnName, rootItem);
         }
+
         protected Boolean IsAnyContains(List<BsonDocument> results, string columnName, string rootItem = "data")
         {
             return results.Count > 0 && results.Any(r => r[rootItem].AsBsonArray.Values.OfType<BsonDocument>().Any(d => d.Contains(columnName)));
         }
 
+        protected Boolean IsAnyContains(List<BsonDocument> results, string columnName, List<string> values, string rootItem = "data")
+        {
+            return results.Count > 0 && results.Any(r => r[rootItem].AsBsonArray.Values.OfType<BsonDocument>().Any(d => d.Contains(columnName) && values.Intersect(d[columnName].ToString().Split(',')).Any()));
+        }
 
         protected Boolean IsAnyContains(BsonDocument result, string columnName, string rootItem = "data")
         {
             return IsAnyContains(new List<BsonDocument> { result }, columnName, rootItem);
+        }
+
+        protected Boolean IsAnyContains(BsonDocument result, string columnName, List<string> values, string rootItem = "data")
+        {
+            return IsAnyContains(new List<BsonDocument> { result }, columnName, values, rootItem);
         }
 
         protected string FisrtOrDefault(BsonDocument result, string columnName, string rootItem = "data", string defaultValue = "")
@@ -456,6 +466,20 @@ namespace prism.web.service.Controller
         }
 
         [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{count}/{columnName}/{columnValues}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, int count, string columnName, string columnValues, string orderBy = null)
+        {
+            List<string> values = columnValues.SplitToList();
+            using (ManagementDb)
+            {
+                var buildGuids = GetBuildGuids(projectName, testJobName, orderBy, count, true);
+                var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
+                results = OrderBy(results.Where(r=>IsAnyContains(r, columnName, values)).ToList(), orderBy).Take(count).ToList();
+                return toResponse(results.ToJson());
+            }
+        }
+
+        [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastResults/{projectName}/{testJobName}/{dataInfo}/{resultType}/{count}/{orderBy?}")]
         public async Task<HttpResponseMessage> GetLastResults(string projectName, string testJobName, string dataInfo, string resultType, int count, string orderBy = null)
         {
@@ -509,6 +533,26 @@ namespace prism.web.service.Controller
                                  select new QueryResultModel { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
                 var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid).ToList(), dataInfo);
                 results = OrderBy(results, orderBy);
+                InsertTimeStamp(timeInfo, buildInfo, results);
+                return toResponse(results.ToJson());
+            }
+        }
+
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetLastTimestampedResults/{projectName}/{testJobName}/{dataInfo}/{insertTimeInfo}/{count}/{columnName}/{columnValues}/{orderBy?}")]
+        public async Task<HttpResponseMessage> GetLastTimestampedResults(string projectName, string testJobName, string dataInfo, string insertTimeInfo, int count, string columnName, string columnValues, string orderBy = null)
+        {
+            Enum.TryParse<TimeInfoTypes>(insertTimeInfo, out TimeInfoTypes timeInfo);
+            var values = columnValues.Split(',').ToList();
+            using (ManagementDb)
+            {
+                var buildInfo = (from build in ManagementDb.TestBuilds
+                                 where build.TestJob.name == testJobName &&
+                                 build.TestJob.Project.name == projectName
+                                 orderby build.startTime, build.timestamp
+                                 select new QueryResultModel { guid = build.guid.ToString(), timestamp = build.timestamp, startTime = build.startTime, endTime = build.endTime });
+                var results = await _testResultController.GetResults(projectName, testJobName, buildInfo.Select(x => x.guid).ToList(), dataInfo);
+                results = OrderBy(results.Where(r => IsAnyContains(r, columnName, values)).ToList(), orderBy).Take(count).ToList();
                 InsertTimeStamp(timeInfo, buildInfo, results);
                 return toResponse(results.ToJson());
             }
