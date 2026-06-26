@@ -1,5 +1,6 @@
-echo @off
-echo usages:
+@echo off
+echo usages: 
+echo Please set http/htps proxy if needed
 echo build [PrismSourceRoot] [PrismPublishedBinRoot]
 
 echo Build WebAPI at the root of Prism solution
@@ -9,18 +10,22 @@ if "%1"=="" (
 	set PrismSourceRoot=%1
 )
 if "%2"=="" (
-	set PrismBinRoot=bin
+	set PrismBinRoot=C:\Prism\bin
 ) else (
 	set PrismBinRoot=%2
 )
 
 echo Prism solution root %PrismSourceRoot%
+pushd %PrismSourceRoot%
+dotnet restore --configfile build\nuget.config
 pushd %PrismSourceRoot%\prism.web.service
+if exist Properties\PublishProfiles\FolderProfile.pubxml copy Properties\PublishProfiles\FolderProfile.pubxml* %PrismSourceRoot%\build
 set PublishDir=PrismPublishedFiles
-msbuild /p:DeployOnBuild=true /p:Configuration=Debug  /p:PublishProfile=Properties\PublishProfiles\FolderProfile.pubxml /p:PreBuildEvent= /p:PostBuildEvent=
+msbuild /p:DeployOnBuild=true /p:Configuration=Debug  /p:PublishProfile=..\build\FolderProfile.pubxml /p:PreBuildEvent= /p:PostBuildEvent=
 if not exist %PublishDir%\Venv xcopy Venv %PublishDir%\Venv /S /C /I /H /R /Y
 if not exist %PublishDir%\Script xcopy Script %PublishDir%\Script /S /C /I /H /R /Y
 powershell -Command "(Get-Content '%PublishDir%\Web.config') -replace 'TestManagementDBTest', 'TestManagementDB' | Set-Content '%PublishDir%\Web.config'"
 powershell -Command "(Get-Content '%PublishDir%\Web.config') -replace '%%userprofile%%\\source\\Prism\\prism.web.service\\bin', '%PrismBinRoot%' | Set-Content '%PublishDir%\Web.config'"
+popd
 popd
 echo Done.

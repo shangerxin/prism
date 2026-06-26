@@ -38,10 +38,11 @@ namespace prism.web.service.Controller
         protected string _prismBinaryRootPath = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).PrismBinaryRoot.Path;
         protected TestResultController _testResultController = new TestResultController();
         protected CondaRunner _conda;
-        protected CondaRunner Conda { 
+        protected CondaRunner Conda
+        {
             get
             {
-                if(_conda == null)
+                if (_conda == null)
                 {
                     _conda = new CondaRunner("conda.bat", Path.Combine(_prismBinaryRootPath, "Venv"));
                 }
@@ -89,9 +90,21 @@ namespace prism.web.service.Controller
             return results.Count > 0 && results.All(r => r[rootItem].AsBsonArray.Values.OfType<BsonDocument>().All(d => d.Contains(columnName)));
         }
 
+
+
         protected Boolean IsContains(BsonDocument result, string columnName, string rootItem = "data")
         {
             return IsContains(new List<BsonDocument> { result }, columnName, rootItem);
+        }
+        protected Boolean IsAnyContains(List<BsonDocument> results, string columnName, string rootItem = "data")
+        {
+            return results.Count > 0 && results.Any(r => r[rootItem].AsBsonArray.Values.OfType<BsonDocument>().Any(d => d.Contains(columnName)));
+        }
+
+
+        protected Boolean IsAnyContains(BsonDocument result, string columnName, string rootItem = "data")
+        {
+            return IsAnyContains(new List<BsonDocument> { result }, columnName, rootItem);
         }
 
         protected string FisrtOrDefault(BsonDocument result, string columnName, string rootItem = "data", string defaultValue = "")
@@ -260,9 +273,9 @@ namespace prism.web.service.Controller
                                   orderby build.startTime, build.timestamp
                                   select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                if (results.Count > 0 && IsContains(results, columnName))
+                if (results.Count > 0 && IsAnyContains(results, columnName))
                 {
-                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Select(d => d[columnName].ToString()));
+                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Where(d => d.Contains(columnName)).Select(d => d[columnName]?.ToString()));
                     if (isUnique)
                     {
                         values = values.Distinct();
@@ -289,9 +302,9 @@ namespace prism.web.service.Controller
                                   orderby build.startTime, build.timestamp
                                   select build.guid.ToString()).ToList();
                 var results = await _testResultController.GetResults(projectName, testJobName, buildGuids, dataInfo);
-                if (results.Count > 0 && IsContains(results, columnName))
+                if (results.Count > 0 && IsAnyContains(results, columnName))
                 {
-                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Select(d => d[columnName].ToString()));
+                    var values = results.SelectMany(r => r["data"].AsBsonArray.Values.OfType<BsonDocument>().Where(d=>d.Contains(columnName)).Select(d => d[columnName].ToString()));
                     if (isUnique)
                     {
                         values = values.Distinct();
@@ -551,12 +564,12 @@ namespace prism.web.service.Controller
             var cmpContent = Converter.JsonToCsv(cmpResult?["data"].ToJson());
             var refContent = Converter.JsonToCsv(refResult?["data"].ToJson());
 
-            using(var context = new TempDirectoryContext("Dashbaord.CompareResults"))
+            using (var context = new TempDirectoryContext("Dashbaord.CompareResults"))
             {
-                var baseFile = context.CreateFile("base.csv", baseContent)?? Guid.NewGuid().ToString();
-                var cmpFile = context.CreateFile("compare.csv", cmpContent)?? Guid.NewGuid().ToString();
-                var refFile = context.CreateFile("reference.csv", refContent)?? Guid.NewGuid().ToString();
-               
+                var baseFile = context.CreateFile("base.csv", baseContent) ?? Guid.NewGuid().ToString();
+                var cmpFile = context.CreateFile("compare.csv", cmpContent) ?? Guid.NewGuid().ToString();
+                var refFile = context.CreateFile("reference.csv", refContent) ?? Guid.NewGuid().ToString();
+
                 var output = Path.Combine(context.TempPath, "output.csv");
                 var cmd = query.ToCompareCommandLine(Path.Combine(_prismBinaryRootPath, "Script", "compare_results.py"), baseFile, cmpFile, refFile, output);
                 Conda.ExecuteCmd(cmd);
