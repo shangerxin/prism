@@ -22,6 +22,12 @@ namespace prism.infra.WebAPI
             get { return (PrismBinaryRoot)this["PrismBinaryRoot"]; }
             set { this["PrismBinaryRoot"] = value; }
         }
+        [ConfigurationProperty("CondaBinary", IsRequired = true)]
+        public CondaBinary CondaBinary
+        {
+            get { return (CondaBinary)this["CondaBinary"]; }
+            set { this["CondaBinary"] = value; }
+        }
     }
 
     public class DashboardSettings : ConfigurationElement
@@ -35,6 +41,16 @@ namespace prism.infra.WebAPI
     }
 
     public class PrismBinaryRoot: ConfigurationElement
+    {
+        [ConfigurationProperty("Path", IsRequired = true)]
+        public string Path
+        {
+            get { return (string)this["Path"]; }
+            set { this["Path"] = value; }
+        }
+    }
+
+    public class CondaBinary: ConfigurationElement
     {
         [ConfigurationProperty("Path", IsRequired = true)]
         public string Path

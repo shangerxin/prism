@@ -36,6 +36,7 @@ namespace prism.web.service.Controller
         #region Fields
         protected int _defaultTakeCount = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).DashboardSettings.DefaultTakeCount;
         protected string _prismBinaryRootPath = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).PrismBinaryRoot.Path;
+        protected string _condaBinaryPath = ((PrismWebAPIConfigSection)ConfigurationManager.GetSection("PrismWebAPIConfig")).CondaBinary.Path;
         protected TestResultController _testResultController = new TestResultController();
         protected CondaRunner _conda;
         protected CondaRunner Conda
@@ -44,7 +45,7 @@ namespace prism.web.service.Controller
             {
                 if (_conda == null)
                 {
-                    _conda = new CondaRunner("conda.bat", Path.Combine(_prismBinaryRootPath, "Venv"));
+                    _conda = new CondaRunner(_condaBinaryPath, Path.Combine(_prismBinaryRootPath, "Venv"));
                 }
                 return _conda;
             }
@@ -569,7 +570,7 @@ namespace prism.web.service.Controller
             List<BsonDocument> cmpResults;
             List<BsonDocument> refResults;
 
-            if (query.BaseGuid == null && query.CompareGuid == null && query.ReferenceGuid == null)
+            if (string.IsNullOrEmpty(query.BaseGuid) && string.IsNullOrEmpty(query.CompareGuid) && string.IsNullOrEmpty(query.ReferenceGuid))
             {
                 baseResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryBaseColumnValue);
                 cmpResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryCompareColumnValue);

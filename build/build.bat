@@ -14,6 +14,11 @@ if "%2"=="" (
 ) else (
 	set PrismBinRoot=%2
 )
+if "%3"=="" (
+	set CondaBinaryPath=conda.bat
+) else (
+	set CondaBinaryPath=%3
+)
 
 echo Prism solution root %PrismSourceRoot%
 pushd %PrismSourceRoot%
@@ -23,10 +28,11 @@ msbuild -t:restore /p:SolutionDir .\prism.web.service.csproj  -p:RestorePackages
 if exist Properties\PublishProfiles\FolderProfile.pubxml copy Properties\PublishProfiles\FolderProfile.pubxml* %PrismSourceRoot%\build
 set PublishDir=PrismPublishedFiles
 msbuild /p:DeployOnBuild=true /p:Configuration=Debug  /p:PublishProfile=..\build\FolderProfile.pubxml /p:PreBuildEvent= /p:PostBuildEvent=
-if not exist %PublishDir%\Venv xcopy Venv %PublishDir%\Venv /S /C /I /H /R /Y
-if not exist %PublishDir%\Script xcopy Script %PublishDir%\Script /S /C /I /H /R /Y
+if not exist %PublishDir%\Venv xcopy Venv %PublishDir%\Venv /E /C /I /H /Y
+if not exist %PublishDir%\Script xcopy Script %PublishDir%\Script /E /C /I /H /Y
 powershell -Command "(Get-Content '%PublishDir%\Web.config') -replace 'TestManagementDBTest', 'TestManagementDB' | Set-Content '%PublishDir%\Web.config'"
 powershell -Command "(Get-Content '%PublishDir%\Web.config') -replace '%%userprofile%%\\source\\Prism\\prism.web.service\\bin', '%PrismBinRoot%' | Set-Content '%PublishDir%\Web.config'"
+powershell -Command "(Get-Content '%PublishDir%\Web.config') -replace 'conda.bat', '%CondaBinaryPath%' | Set-Content '%PublishDir%\Web.config'"
 popd
 popd
 echo Done.
