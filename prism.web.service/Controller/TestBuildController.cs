@@ -10,6 +10,7 @@ using prism.model.Model;
 using prism.web.service.Model;
 using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 
 namespace prism.web.service.Controller
 {
@@ -24,7 +25,7 @@ namespace prism.web.service.Controller
             return new
             {
                 x.id,
-                x.guid,
+                guid = x.guid.ToString(),
                 x.testJobId,
                 x.buildResultId,
                 x.testResultId,
@@ -35,58 +36,66 @@ namespace prism.web.service.Controller
 
         protected int? getTestJobId(string testJobName)
         {
-            return managementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
+            return ManagementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
         }
 
         // GET api/<controller>
-        public string Get()
+        public async Task<HttpResponseMessage> Get()
         {
-            using(managementDb)
+            using (ManagementDb)
             {
-                var results = managementDb.TestBuilds.ToList().Select(t => this.ToSerizalizable(t));
-                return JsonSerializer.Serialize(results);
+                var results = ManagementDb.TestBuilds.Select(t => this.ToSerizalizable(t));
+                return toResponse(JsonSerializer.Serialize(results));
             }
         }
 
         // GET api/<controller>/5
-        public string Get(int id)
+        public async Task<HttpResponseMessage> Get(int id)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var testBuild = managementDb.TestBuilds.Where(p => p.id == id).FirstOrDefault();
-                if(testBuild == null)
+                var testBuild = ManagementDb.TestBuilds.Where(p => p.id == id).FirstOrDefault();
+                if (testBuild == null)
                 {
-                    return null;
+                    return ResponseNotFound;
                 }
                 else
                 {
-                    var result = ToSerizalizable(testBuild);
-                    return JsonSerializer.Serialize(result);
+                    var result = ToSerizalizable(testBuild).ToJson();
+                    return toResponse(result);
                 }
             }
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/Id/{guid}")]
-        public string Id(string guid)
+        public async Task<HttpResponseMessage> Id(string guid)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
                 if (Guid.TryParse(guid, out Guid parsedGuid))
                 {
-                    return managementDb.TestBuilds.Where(p => p.guid == parsedGuid).FirstOrDefault()?.id.ToString();
+                    return toResponse(ManagementDb.TestBuilds.Where(p => p.guid == parsedGuid).FirstOrDefault()?.id.ToString());
                 }
-                return null;
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
         }
 
         [HttpGet]
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/GUID/{id}")]
-        public string GUID(int id)
+        public async Task<HttpResponseMessage> GUID(int id)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                return managementDb.TestBuilds.Where(p => p.id == id).FirstOrDefault()?.guid.ToString();
+                var testBuild = ManagementDb.TestBuilds.Where(p => p.id == id).FirstOrDefault();
+                if (testBuild == null)
+                {
+                    return ResponseNotFound;
+                }
+                else
+                {
+                    return toResponse(testBuild.guid.ToString());
+                }
             }
         }
 
@@ -95,13 +104,13 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}")]
         public async Task<HttpResponseMessage> LastSuccess(string testJobName)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
                 var testJobId = getTestJobId(testJobName);
                 if (testJobId == null) { return null; }
-                var lastSuccess = (from testBuild in managementDb.TestBuilds
+                var lastSuccess = (from testBuild in ManagementDb.TestBuilds
                                    where testJobId == testBuild.testJobId && testBuild.buildResultId == (int)ResultTypes.Pass
-                                   orderby testBuild.timestamp descending 
+                                   orderby testBuild.timestamp descending
                                    select testBuild).FirstOrDefault();
                 return toResponse(Serizalize(lastSuccess));
             }
@@ -111,12 +120,12 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/LastSuccess/{testJobName}/{testResultType}")]
         public async Task<HttpResponseMessage> Last(string testJobName, string testResultType)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
                 var testJobId = getTestJobId(testJobName);
-                var resultType = managementDb.ResultTypes.Where(r => r.name == testResultType).FirstOrDefault();
+                var resultType = ManagementDb.ResultTypes.Where(r => r.name == testResultType).FirstOrDefault();
                 if (testJobId == null || resultType == null) { return null; }
-                var last = (from testBuild in managementDb.TestBuilds
+                var last = (from testBuild in ManagementDb.TestBuilds
                             where testJobId == testBuild.testJobId && testBuild.testResultId == resultType.id
                             orderby testBuild.timestamp descending
                             select testBuild).FirstOrDefault();
@@ -128,11 +137,11 @@ namespace prism.web.service.Controller
         [Route(ServiceHelper.ApiPrefix + "/TestBuild/BuildList/{testJobName}/{start}/{end}")]
         public async Task<HttpResponseMessage> BuildList(string testJobName, DateTime start, DateTime end)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var testJobId = managementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
+                var testJobId = ManagementDb.TestJobs.Where(p => p.name == testJobName).FirstOrDefault()?.id ?? null;
                 if (testJobId == null) { return null; }
-                var buildList = (from testBuild in managementDb.TestBuilds
+                var buildList = (from testBuild in ManagementDb.TestBuilds
                                  where testBuild.testJobId == testJobId && testBuild.timestamp >= start && testBuild.timestamp <= end
                                  orderby testBuild.timestamp
                                  select testBuild).ToList();
@@ -141,25 +150,25 @@ namespace prism.web.service.Controller
         }
 
         // POST api/<controller>
-        public TestBuild Post([FromBody] string value)
+        public async Task<HttpResponseMessage> Post([FromBody] string value)
         {
             var testBuild = JsonSerializer.Deserialize<TestBuild>(value);
-            using (managementDb)
-            {      
-                testBuild.timestamp = testBuild.startTime?? DateTime.Now;
-                managementDb.TestBuilds.Add(testBuild);
-                managementDb.SaveChanges();
+            using (ManagementDb)
+            {
+                testBuild.timestamp = testBuild.startTime ?? DateTime.Now;
+                ManagementDb.TestBuilds.Add(testBuild);
+                ManagementDb.SaveChanges();
             }
-            return testBuild;
+            return toResponse(Serizalize(testBuild));
         }
 
         // PUT api/<controller>/5
-        public bool Put(int id, [FromBody] string value)
+        public async Task<HttpResponseMessage> Put(int id, [FromBody] string value)
         {
             var testBuild = JsonSerializer.Deserialize<TestBuild>(value);
-            using (managementDb)
+            using (ManagementDb)
             {
-                var existingTestBuild = managementDb.TestBuilds.SingleOrDefault(t => t.guid == testBuild.guid || t.id == id);
+                var existingTestBuild = ManagementDb.TestBuilds.SingleOrDefault(t => t.guid == testBuild.guid || t.id == id);
                 if (existingTestBuild != null)
                 {
                     existingTestBuild.testJobId = testBuild.testJobId;
@@ -167,25 +176,27 @@ namespace prism.web.service.Controller
                     existingTestBuild.testResultId = testBuild.testResultId;
                     existingTestBuild.startTime = testBuild.startTime;
                     existingTestBuild.endTime = testBuild.endTime;
-                    managementDb.SaveChanges();
-                    return true;
+                    ManagementDb.SaveChanges();
+                    return ResponseOK;
                 }
             }
-            return false;
+            return ResponseNotFound;
         }
 
         // DELETE api/<controller>/5
-        public void Delete(int id)
+        public async Task<HttpResponseMessage> Delete(int id)
         {
-            using (managementDb)
+            using (ManagementDb)
             {
-                var testBuild = managementDb.TestBuilds.SingleOrDefault(t => t.id == id);
+                var testBuild = ManagementDb.TestBuilds.SingleOrDefault(t => t.id == id);
                 if (testBuild != null)
                 {
-                    managementDb.TestBuilds.Remove(testBuild);
-                    managementDb.SaveChanges();
+                    ManagementDb.TestBuilds.Remove(testBuild);
+                    ManagementDb.SaveChanges();
+                    return ResponseOK;
                 }
             }
+            return ResponseNotFound;
         }
     }
 }

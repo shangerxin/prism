@@ -15,9 +15,11 @@ using System.Web.Http;
 namespace prism.web.service.Controller
 {
     public abstract class PrismControllerBase<T>: ApiController
-    {
+    {   
+        protected HttpResponseMessage ResponseNotFound { get; set; } = new HttpResponseMessage(HttpStatusCode.NotFound);
+        protected HttpResponseMessage ResponseOK { get; set; } = new HttpResponseMessage(HttpStatusCode.OK);
         protected TestManagementDBEntities _managementDB;
-        protected TestManagementDBEntities managementDb { 
+        protected TestManagementDBEntities ManagementDb { 
             get { 
                 if(_managementDB == null)
                 {
@@ -27,7 +29,7 @@ namespace prism.web.service.Controller
             } 
         }
 
-        protected PrismTestResultsContext resultDb
+        protected PrismTestResultsContext ResultDb
         {
             get
             {
@@ -45,6 +47,11 @@ namespace prism.web.service.Controller
 
         protected HttpResponseMessage toResponse(string content, HttpStatusCode code = HttpStatusCode.OK, string metadataType="application/json")
         {
+            if(string.IsNullOrEmpty(content)) 
+            {
+                return ResponseNotFound;
+            }
+
             var response = new HttpResponseMessage(code);
             response.Content = new StringContent(content, Encoding.UTF8, metadataType);
             return response;

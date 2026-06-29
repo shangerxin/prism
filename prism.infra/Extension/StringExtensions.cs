@@ -12,7 +12,8 @@ namespace prism.infra.Extension
         {
             if (string.IsNullOrEmpty(str))
                 return new List<string>();
-            return str.Split(separator).Where(x=>!String.IsNullOrWhiteSpace(x)).Select(s => s.Trim()).ToList();
+            var result = str.Split(separator).Where(x=>!String.IsNullOrWhiteSpace(x)).Select(s => s.Trim()).ToList();
+            return result;
         }
     }
 }
