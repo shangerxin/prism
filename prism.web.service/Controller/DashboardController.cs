@@ -619,7 +619,7 @@ namespace prism.web.service.Controller
                 var cmd = query.ToCompareCommandLine(Path.Combine(_prismBinaryRootPath, "Script", "compare_results.py"), baseFile, cmpFile, refFile, output);
                 Conda.ExecuteCmd(cmd);
                 var json = Converter.CsvToJson(File.ReadAllText(output));
-                return toResponse(json);
+                return toResponse(json, Conda.ExitCode == 0? HttpStatusCode.OK: HttpStatusCode.Forbidden);
             }
         }
 

@@ -150,7 +150,7 @@ namespace prism.infra.WebAPI
             {
                 if (string.IsNullOrEmpty(_baseSuffix))
                 {
-                    _baseSuffix = QueryBaseColumnValue ?? "_base";
+                    _baseSuffix = string.IsNullOrEmpty(QueryBaseColumnValue) ? "_base" : QueryBaseColumnValue;
                 }
                 return _baseSuffix;
             }
@@ -164,7 +164,7 @@ namespace prism.infra.WebAPI
             {
                 if (string.IsNullOrEmpty(_compareSuffix))
                 {
-                    _compareSuffix = QueryCompareColumnValue ?? "_cmp";
+                    _compareSuffix = string.IsNullOrEmpty(QueryCompareColumnValue) ? "_cmp" : QueryCompareColumnValue;
                 }
                 return _compareSuffix;
             }
@@ -178,7 +178,7 @@ namespace prism.infra.WebAPI
             {
                 if (string.IsNullOrEmpty(_referenceSuffix))
                 {
-                    _referenceSuffix = QueryReferenceColumnValue ?? "_ref";
+                    _referenceSuffix = string.IsNullOrEmpty(QueryReferenceColumnValue) ? "_ref" : QueryReferenceColumnValue;
                 }
                 return _referenceSuffix;
             }
