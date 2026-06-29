@@ -570,6 +570,31 @@ namespace prism.web.service.Controller
             List<BsonDocument> cmpResults;
             List<BsonDocument> refResults;
 
+            var isOnlyOneResult = (!string.IsNullOrEmpty(query.BaseGuid) && (string.IsNullOrEmpty(query.CompareGuid) && string.IsNullOrEmpty(query.ReferenceGuid))) ||
+                !string.IsNullOrEmpty(query.QueryBaseColumnValue) && (string.IsNullOrEmpty(query.QueryCompareColumnValue) && string.IsNullOrEmpty(query.QueryReferenceColumnValue));
+
+
+            if (isOnlyOneResult)
+            {
+                if(query.BaseGuid == null) {
+                    baseResult = (await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryBaseColumnValue)).FirstOrDefault();
+                }
+                else
+                {
+                    baseResult = (await _testResultController.GetResults(query.ProjectName, query.TestJobName, new List<string>() { query.BaseGuid }, query.DataInfo)).FirstOrDefault();
+                }
+
+                if (baseResult == null)
+                {
+                    return ResponseNotFound;
+                }
+                else
+                {
+                    return toResponse(baseResult["data"].ToJson());
+                }
+            }
+
+
             if (string.IsNullOrEmpty(query.BaseGuid) && string.IsNullOrEmpty(query.CompareGuid) && string.IsNullOrEmpty(query.ReferenceGuid))
             {
                 baseResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryBaseColumnValue);
@@ -598,7 +623,6 @@ namespace prism.web.service.Controller
             if (baseResults.Count == 0 || (cmpResults.Count == 0 && refResults.Count == 0))
             {
                 return toResponse("No results found for the given query parameters.", HttpStatusCode.NotFound);
-
             }
 
             baseResult = baseResults.FirstOrDefault();
