@@ -335,10 +335,10 @@ def _convert_merged_column_value(result_df, method, is_revert, column_name, left
             result_df["_merge"] = result_df[f"{column_name}{left_suffix}"].astype(str).str.rstrip('%').astype(float) / result_df[f"{column_name}{right_suffix}"].astype(str).str.rstrip('%').astype(float)
     elif method == CompareMethods.value.name:
         result_df.loc[(result_df["_merge"] == "both") & (result_df[f"{column_name}{left_suffix}"].isna()) & (result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.same.name
-        result_df.loc[(result_df["_merge"] == "both") & (~result_df[f"{column_name}{left_suffix}"].isna()) & (result_df[f"{column_name}{left_suffix}"] != "") & (result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.missing.name
-        result_df.loc[result_df["_merge"] == "left_only", "_merge"] = CompareValueResults.missing.name 
-        result_df.loc[(result_df["_merge"] == "both") & (result_df[f"{column_name}{left_suffix}"].isna()) & (~result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.new.name
-        result_df.loc[result_df["_merge"] == "right_only", "_merge"] = CompareValueResults.new.name 
+        result_df.loc[(result_df["_merge"] == "both") & (~result_df[f"{column_name}{left_suffix}"].isna()) & (result_df[f"{column_name}{left_suffix}"] != "") & (result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.new.name
+        result_df.loc[result_df["_merge"] == "left_only", "_merge"] = CompareValueResults.new.name 
+        result_df.loc[(result_df["_merge"] == "both") & (result_df[f"{column_name}{left_suffix}"].isna()) & (~result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.missing.name
+        result_df.loc[result_df["_merge"] == "right_only", "_merge"] = CompareValueResults.missing.name 
         result_df.loc[result_df["_merge"] == "both", "_merge"] = CompareValueResults.changed.name
         result_df.loc[result_df.query(f"`{column_name}{left_suffix}` == `{column_name}{right_suffix}`").index, "_merge"] = CompareValueResults.same.name
     elif method == CompareMethods.subtract.name:
