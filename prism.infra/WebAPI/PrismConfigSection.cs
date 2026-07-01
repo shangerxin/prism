@@ -28,6 +28,12 @@ namespace prism.infra.WebAPI
             get { return (CondaBinary)this["CondaBinary"]; }
             set { this["CondaBinary"] = value; }
         }
+        [ConfigurationProperty("BackupRoot", IsRequired = true)]
+        public BackupRoot BackupRoot
+        {
+            get { return (BackupRoot)this["BackupRoot"]; }
+            set { this["BackupRoot"] = value; }
+        }
     }
 
     public class DashboardSettings : ConfigurationElement
@@ -57,6 +63,32 @@ namespace prism.infra.WebAPI
         {
             get { return (string)this["Path"]; }
             set { this["Path"] = value; }
+        }
+    }
+
+    public class BackupRoot : ConfigurationElement
+    {
+        [ConfigurationProperty("Path", IsRequired = true)]
+        public string Path
+        {
+            get { return (string)this["Path"]; }
+            set { this["Path"] = value; }
+        }
+
+
+        //Add configuration properties base on the enum BackupItemTypes.
+        [ConfigurationProperty("SqlServerDB", IsRequired = true)]
+        public string SqlServerDB
+        {
+            get { return (string)this["SqlServerDB"]; }
+            set { this["SqlServerDB"] = value; }
+        }
+
+        [ConfigurationProperty("MongoDB", IsRequired = true)]
+        public string MongoDB
+        {
+            get { return (string)this["MongoDB"]; }
+            set { this["MongoDB"] = value; }
         }
     }
 }
