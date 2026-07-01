@@ -557,6 +557,16 @@ def sort_final_result(df: pd.DataFrame, sort_by_columns: list[int]):
     df.sort_values(by=[df.columns[i] for i in sort_by_columns], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+
+def unique_add(list1: list, list2: list) -> list:
+    result = [x for x in list1]
+    result = [x for x in list2 if x not in list1]
+    return result
+
+def remove_items(list1: list, list2: list) -> list:
+    result = [x for x in list1 if x not in list2]
+    return result
+
     
 def main(args: argparse.Namespace):
     if args.version:
@@ -579,7 +589,9 @@ def main(args: argparse.Namespace):
     compare_df   = filter_rows_with_value(compare_df, args.filter_row_with_value)
     reference_df = filter_rows_with_value(reference_df, args.filter_row_with_value)
     
-    key_columns = args.keep_column + args.key_column
+    args.compare_column = remove_items(args.compare_column, key_columns)
+    args.keep_column = remove_items(args.keep_column, args.key_column)
+    key_columns = unique_add(args.keep_column, args.key_column)
     _sort(files_df, key_columns, args.compare_column, args.insert_file_name_column)
     _sort(compare_df, key_columns, args.compare_column, args.insert_file_name_column)
     _sort(reference_df, key_columns, args.compare_column, args.insert_file_name_column)
