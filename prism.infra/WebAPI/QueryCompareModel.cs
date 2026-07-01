@@ -1,4 +1,5 @@
 ﻿using prism.infra.Enum;
+using prism.infra.Extension;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -184,11 +185,90 @@ namespace prism.infra.WebAPI
             }
             set { _referenceSuffix = value; }
         }
-        [JsonRequired]
-        public int[] CompareColumnIndexes { get; set; } = new int[0];
-        [JsonRequired]
-        public int[] KeyColumnIndexes { get; set; } = new int[0];
-        public int[] KeepColumnIndexes { get; set; } = new int[0];
+
+        public string[] DataTableColumnNames { get; set; } = new string[0];
+        protected int[] _compareColumnIndexes;
+        public int[] CompareColumnIndexes
+        {
+            get
+            {
+                if (_compareColumnIndexes == null)
+                {
+                    if (CompareColumnNames == null || CompareColumnNames.Length == 0)
+                    {
+                        _compareColumnIndexes = new int[] { };
+                    }
+                    else
+                    {
+                        _compareColumnIndexes = DataTableColumnNames.ToArrayIndexes(CompareColumnNames).Where(x => x >= 0).ToArray();
+                    }
+                }
+
+                return _compareColumnIndexes;
+            }
+
+            set
+            {
+                _compareColumnIndexes = value;
+            }
+        }
+        public string[] CompareColumnNames { get; set; } = new string[0];
+
+        protected int[] _keyColumnIndexes;
+        public int[] KeyColumnIndexes
+        {
+            get
+            {
+                if (_keyColumnIndexes == null)
+                {
+                    if (KeyColumnNames == null || KeyColumnNames.Length == 0)
+                    {
+                        _keyColumnIndexes = new int[] { };
+                    }
+                    else
+                    {
+                        _keyColumnIndexes = DataTableColumnNames.ToArrayIndexes(KeyColumnNames).Where(x => x >= 0).ToArray();
+                    }
+                }
+
+                return _keyColumnIndexes;
+            }
+
+            set
+            {
+                _keyColumnIndexes = value;
+            }
+        }
+        public string[] KeyColumnNames { get; set; } = new string[0];
+
+
+        protected int[] _keepColumnIndexes;
+        public int[] KeepColumnIndexes
+        {
+            get
+            {
+                if (_keepColumnIndexes == null)
+                {
+                    if (KeepColumnNames == null || KeepColumnNames.Length == 0)
+                    {
+                        _keepColumnIndexes = new int[] { };
+                    }
+                    else
+                    {
+                        _keepColumnIndexes = DataTableColumnNames.ToArrayIndexes(KeepColumnNames).Where(x => x >= 0).ToArray();
+                    }
+                }
+
+                return _keepColumnIndexes;
+            }
+
+            set
+            {
+                _keepColumnIndexes = value;
+            }
+        }
+        public string[] KeepColumnNames { get; set; } = new string[0];
+
         public int[] CompareWithPercentageRatioColumnIndexes { get; set; } = new int[0];
         // like 2:pass
         public string[] FilterRowWithColumnValues { get; set; }

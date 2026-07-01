@@ -559,7 +559,35 @@ namespace prism.web.service.Controller
             }
         }
 
-        [HttpPost]
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/GetDataColumnNames/{projectName}/{testJobName}/{dataInfo}")]
+        public async Task<HttpResponseMessage> GetDataColumnNames(string projectName, string testJobName, string dataInfo)
+        {
+            using (ManagementDb)
+            {
+                var result = await _testResultController.GetResultFirstOrDefault(projectName, testJobName, dataInfo);
+                if(result == null)
+                {
+                    return ResponseNotFound;
+                }
+                else
+                {
+                    var columnNames = result["data"].AsBsonArray.Values.OfType<BsonDocument>().SelectMany(d => d.Names).Distinct().ToList();
+
+
+                    if (columnNames == null || columnNames.Count == 0)
+                    {
+                        return ResponseNotFound;
+                    }
+                    else
+                    {
+                        return toResponse(columnNames.ToJson());
+                    }
+                }
+            }
+        }
+
+       [HttpPost]
         [Route(ServiceHelper.ApiPrefix + "/Dashboard/CompareResults")]
         public async Task<HttpResponseMessage> CompareResults([FromBody] QueryCompareModel query)
         {

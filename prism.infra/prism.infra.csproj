@@ -84,8 +84,10 @@
   <ItemGroup>
     <Compile Include="Enum\QueryCompareMethodTypes.cs" />
     <Compile Include="Enum\TimeInfoTypes.cs" />
+    <Compile Include="Extension\ArrayExtensions.cs" />
     <Compile Include="Extension\DateTimeExtensions.cs" />
     <Compile Include="Extension\DirectoryExtensions.cs" />
+    <Compile Include="Extension\ListExtensions.cs" />
     <Compile Include="Extension\StringExtensions.cs" />
     <Compile Include="Helper\Calculator.cs" />
     <Compile Include="Helper\Converter.cs" />
