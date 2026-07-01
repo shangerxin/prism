@@ -589,7 +589,7 @@ def main(args: argparse.Namespace):
     compare_df   = filter_rows_with_value(compare_df, args.filter_row_with_value)
     reference_df = filter_rows_with_value(reference_df, args.filter_row_with_value)
     
-    args.compare_column = remove_items(args.compare_column, key_columns)
+    args.compare_column = remove_items(args.compare_column, args.key_column)
     args.keep_column = remove_items(args.keep_column, args.key_column)
     key_columns = unique_add(args.keep_column, args.key_column)
     _sort(files_df, key_columns, args.compare_column, args.insert_file_name_column)
