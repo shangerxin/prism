@@ -106,4 +106,4 @@ Notes:
 
 
 ### Versioning
-0.1.0 - Initial version with basic test result upload and management features. Support display the result on Grafana dashboard.
+[Version](./version.txt) - Initial version with basic test result upload and management features. Support display the result on Grafana dashboard.
