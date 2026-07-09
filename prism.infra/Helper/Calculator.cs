@@ -15,8 +15,9 @@ namespace prism.infra.Helper
                 throw new ArgumentException("Array cannot be empty or null.");
 
             double logSum = values.Where(x=> x != 0.0).Sum(val => Math.Log(Convert.ToDouble(val)));
+            double noneZeroCount = values.Count(x => x != 0.0);
 
-            return Math.Exp(logSum / values.Length);
+            return Math.Exp(logSum / noneZeroCount);
         }
     }
 

@@ -12,6 +12,11 @@ namespace prism.infra.Test.Helper
             double expected = Math.Pow(1 * 2 * 3 * 4 * 5, 1.0 / 5);
             double actual = Calculator.Geomean(values);
             Assert.AreEqual(expected, actual, 0.0001);
+
+            double[] valuesWithZero = { 1, 2, 0, 4, 5 };
+            double expectedWithZero = Calculator.Geomean(new double[]{ 1, 2, 4, 5 });
+            double actualWithZero = Calculator.Geomean(valuesWithZero);
+            Assert.AreEqual(expectedWithZero, actualWithZero, 0.0001);
         }
     }
 }
