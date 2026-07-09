@@ -106,10 +106,11 @@ namespace prism.web.service.Model
             var buildGuid = json["buildGuid"]?.GetValue<string>();
             var dataColumnName = json["dataColumnName"]?.GetValue<string>();
             var dataColumnValue = json["dataColumnValue"]?.GetValue<string>();
+            var dataInfo = json["dataInfo"]?.GetValue<string>();
 
-            if (projectName == null || testJobName == null || (buildGuid == null && (dataColumnName == null || dataColumnValue == null)))
+            if (projectName == null || testJobName == null || (buildGuid == null && dataInfo == null && (dataColumnName == null || dataColumnValue == null)))
             {
-                throw new Exception("The fields, project name, test job name or guid is null.");
+                throw new Exception("The fields, project name, test job name or guid, dataInfo is null.");
             }
             var collectionName = $@"{projectName}.{testJobName}.{collectionTrailName}";
 
@@ -124,7 +125,14 @@ namespace prism.web.service.Model
                         return false;
                     }
 
-                    return data.AsBsonArray.Any(item => item.AsBsonDocument.GetValue(dataColumnName, null)?.AsString == dataColumnValue);
+                    if (string.IsNullOrEmpty(dataColumnValue))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return data.AsBsonArray.Any(item => item.AsBsonDocument.GetValue(dataColumnName, null)?.AsString == dataColumnValue);
+                    }
                 }).ToList();
             }
             else
@@ -376,6 +384,11 @@ namespace prism.web.service.Model
         public async Task<List<BsonDocument>> GetBsonResults(List<string> results)
         {
             return await Task.WhenAll(results.Select(async r => (await Getex("Results", r)).FirstOrDefault())).ContinueWith(t => t.Result.ToList());
+        }
+
+        public async Task<BsonDocument> GetBsonResultFirstOrDefault(string result)
+        {
+            return await Getex("Results", result).ContinueWith(t => t.Result.FirstOrDefault()?.ToBsonDocument());
         }
 
         #endregion Get

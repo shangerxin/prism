@@ -99,6 +99,7 @@ from pathlib import Path
 from datetime import date
 from glob import glob
 from typing import Optional, Union
+from unittest import result
 
 import pandas as pd
 
@@ -333,10 +334,13 @@ def _convert_merged_column_value(result_df, method, is_revert, column_name, left
         else:
             result_df["_merge"] = result_df[f"{column_name}{left_suffix}"].astype(str).str.rstrip('%').astype(float) / result_df[f"{column_name}{right_suffix}"].astype(str).str.rstrip('%').astype(float)
     elif method == CompareMethods.value.name:
+        result_df.loc[(result_df["_merge"] == "both") & (result_df[f"{column_name}{left_suffix}"].isna()) & (result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.same.name
+        result_df.loc[(result_df["_merge"] == "both") & (~result_df[f"{column_name}{left_suffix}"].isna()) & (result_df[f"{column_name}{left_suffix}"] != "") & (result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.new.name
+        result_df.loc[result_df["_merge"] == "left_only", "_merge"] = CompareValueResults.new.name 
+        result_df.loc[(result_df["_merge"] == "both") & (result_df[f"{column_name}{left_suffix}"].isna()) & (~result_df[f"{column_name}{right_suffix}"].isna()), "_merge"] = CompareValueResults.missing.name
+        result_df.loc[result_df["_merge"] == "right_only", "_merge"] = CompareValueResults.missing.name 
         result_df.loc[result_df["_merge"] == "both", "_merge"] = CompareValueResults.changed.name
         result_df.loc[result_df.query(f"`{column_name}{left_suffix}` == `{column_name}{right_suffix}`").index, "_merge"] = CompareValueResults.same.name
-        result_df.loc[result_df["_merge"] == "left_only", "_merge"] = CompareValueResults.new.name 
-        result_df.loc[result_df["_merge"] == "right_only", "_merge"] = CompareValueResults.missing.name 
     elif method == CompareMethods.subtract.name:
         if is_revert:
             result_df["_merge"] = result_df[f"{column_name}{right_suffix}"].astype(str).str.rstrip('%').astype(float) - result_df[f"{column_name}{left_suffix}"].astype(str).str.rstrip('%').astype(float)
@@ -553,6 +557,16 @@ def sort_final_result(df: pd.DataFrame, sort_by_columns: list[int]):
     df.sort_values(by=[df.columns[i] for i in sort_by_columns], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+
+def unique_add(list1: list, list2: list) -> list:
+    result = [x for x in list1]
+    result = [x for x in list2 if x not in list1]
+    return result
+
+def remove_items(list1: list, list2: list) -> list:
+    result = [x for x in list1 if x not in list2]
+    return result
+
     
 def main(args: argparse.Namespace):
     if args.version:
@@ -575,7 +589,9 @@ def main(args: argparse.Namespace):
     compare_df   = filter_rows_with_value(compare_df, args.filter_row_with_value)
     reference_df = filter_rows_with_value(reference_df, args.filter_row_with_value)
     
-    key_columns = args.keep_column + args.key_column
+    args.compare_column = remove_items(args.compare_column, args.key_column)
+    args.keep_column = remove_items(args.keep_column, args.key_column)
+    key_columns = unique_add(args.keep_column, args.key_column)
     _sort(files_df, key_columns, args.compare_column, args.insert_file_name_column)
     _sort(compare_df, key_columns, args.compare_column, args.insert_file_name_column)
     _sort(reference_df, key_columns, args.compare_column, args.insert_file_name_column)
