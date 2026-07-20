@@ -282,7 +282,7 @@ namespace prism.model.Model.WebAPI
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public int EffectiveDigits { get; set; } = 2;
-        public string RegressionPattern { get; set; } = ".+,\\s*missing\\s*,";
+        public string RegressionPattern { get; set; } = "missing";
 
         public string Option<T>(string option, T value)
         {
