@@ -28,6 +28,7 @@ using System.Web.UI.WebControls;
 using prism.infra.WebAPI;
 using System.Configuration;
 using prism.infra.Runner;
+using prism.model.Model.WebAPI;
 
 namespace prism.web.service.Controller
 {
@@ -670,8 +671,74 @@ namespace prism.web.service.Controller
                 var output = Path.Combine(context.TempPath, "output.csv");
                 var cmd = query.ToCompareCommandLine(Path.Combine(_prismBinaryRootPath, "Script", "compare_results.py"), baseFile, cmpFile, refFile, output);
                 Conda.ExecuteCmd(cmd);
-                var json = Converter.CsvToJson(File.ReadAllText(output));
+                var json = Converter.CsvToJson(File.ReadAllText(output), query.EffectiveDigits);
                 return toResponse(json, Conda.ExitCode == 0? HttpStatusCode.OK: HttpStatusCode.Forbidden);
+            }
+        }
+
+
+        [HttpPost]
+        [Route(ServiceHelper.ApiPrefix + "/Dashboard/Regression")]
+        public async Task<HttpResponseMessage> Regression([FromBody] QueryCompareModel query)
+        {
+            BsonDocument baseResult;
+            BsonDocument cmpResult;
+            List<BsonDocument> baseResults;
+            List<BsonDocument> cmpResults;
+            query.Method = QueryCompareMethodTypes.value;
+
+            var isOnlyOneResult = (!string.IsNullOrEmpty(query.BaseGuid) && (string.IsNullOrEmpty(query.CompareGuid))) ||
+                !string.IsNullOrEmpty(query.QueryBaseColumnValue) && (string.IsNullOrEmpty(query.QueryCompareColumnValue));
+
+            if (isOnlyOneResult)
+            {
+                return ResponseNotFound;
+            }
+
+            if (string.IsNullOrEmpty(query.BaseGuid) && string.IsNullOrEmpty(query.CompareGuid))
+            {
+                baseResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryBaseColumnValue);
+                cmpResults = await _testResultController.GetResults(query.ProjectName, query.TestJobName, query.DataInfo, query.QueryColumnName, query.QueryCompareColumnValue);
+            }
+            else
+            {
+                var guidResults = new Dictionary<string, List<BsonDocument>>();
+                await Task.WhenAll(new List<string>() { query.BaseGuid, query.CompareGuid, query.ReferenceGuid }.Select(async g =>
+                {
+                    if (string.IsNullOrEmpty(g))
+                    {
+                        return;
+                    }
+                    var result = await _testResultController.GetResults(query.ProjectName, query.TestJobName, new List<string>() { g }, query.DataInfo);
+                    guidResults.Add(g, result);
+                }));
+                baseResults = guidResults.ContainsKey(query.BaseGuid) ? guidResults[query.BaseGuid] : new List<BsonDocument>();
+                cmpResults = guidResults.ContainsKey(query.CompareGuid) ? guidResults[query.CompareGuid] : new List<BsonDocument>();
+            }
+
+            if (baseResults.Count == 0 || cmpResults.Count == 0)
+            {
+                return toResponse("No results found for the given query parameters.", HttpStatusCode.NotFound);
+            }
+
+            baseResult = baseResults.FirstOrDefault();
+            cmpResult = cmpResults.FirstOrDefault();
+
+            var baseContent = Converter.JsonToCsv(baseResult?["data"].ToJson());
+            var cmpContent = Converter.JsonToCsv(cmpResult?["data"].ToJson());
+
+            using (var context = new TempDirectoryContext("Dashbaord.CompareResults"))
+            {
+                var baseFile = context.CreateFile("base.csv", baseContent) ?? Guid.NewGuid().ToString();
+                var cmpFile = context.CreateFile("compare.csv", cmpContent) ?? Guid.NewGuid().ToString();
+
+                var output = Path.Combine(context.TempPath, "output.csv");
+                var scriptPath = Path.Combine(_prismBinaryRootPath, "Script", "compare_results.py");
+                var cmd = query.ToCompareCommandLine(scriptPath, baseFile, cmpFile, output);
+                Conda.ExecuteCmd(cmd);
+                var regressionContent = Converter.FilterRegressionCsv(File.ReadAllText(output), query.RegressionPattern);
+                var json = Converter.CsvToJson(regressionContent, query.EffectiveDigits);
+                return toResponse(json, Conda.ExitCode == 0 ? HttpStatusCode.OK : HttpStatusCode.Forbidden);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using prism.infra.Enum;
 using prism.infra.Extension;
+using prism.infra.WebAPI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace prism.infra.WebAPI
+namespace prism.model.Model.WebAPI
 {
     public class QueryCompareModel : QueryModelBase
     {
@@ -280,6 +281,8 @@ namespace prism.infra.WebAPI
         public int[] RevertCompareColumnIndexes { get; set; } = new int[0];
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public int EffectiveDigits { get; set; } = 2;
+        public string RegressionPattern { get; set; } = ".+,\\s*missing\\s*,";
 
         public string Option<T>(string option, T value)
         {
@@ -317,6 +320,19 @@ namespace prism.infra.WebAPI
         {
             string commandLine = $"python {pythonScriptPath} {baseCSV} --output {outputPath} --compare {compareCSV} --reference {referenceCSV} --file-suffix {BaseSuffix} --compare-suffix {CompareSuffix} --reference-suffix {ReferenceSuffix} {Option("compare-column", CompareColumnIndexes)} --compare-method {Method.ToString()} {Option("is-revert-compare", IsRevertCompareRatio)} {Option("revert-compare-columns", RevertCompareColumnIndexes)} {Option("is-convert-compare-as-value-to-test-state", IsConvertCompareResultToTestState)} {Option("keep-column", KeepColumnIndexes)} {Option("key-column", KeyColumnIndexes)} {Option("percentage-ratio-columns", CompareWithPercentageRatioColumnIndexes)} {Option("unique", IsUniqueBeforeCompare)} {Option("filter-row-with-value", FilterRowWithColumnValues)} {Option("sort-by-column", OrderByResultColumnIndexes)} --file-target-must-exist";
 
+            return commandLine;
+        }
+
+        public string ToCompareCommandLine(string pythonScriptPath, string baseCSV, string compareCSV, string outputPath)
+        {
+            string commandLine = $"python {pythonScriptPath} {baseCSV} --output {outputPath} --compare {compareCSV} --file-suffix {BaseSuffix} --compare-suffix {CompareSuffix} {Option("compare-column", CompareColumnIndexes)} --compare-method {Method.ToString()} {Option("is-revert-compare", IsRevertCompareRatio)} {Option("revert-compare-columns", RevertCompareColumnIndexes)} {Option("is-convert-compare-as-value-to-test-state", IsConvertCompareResultToTestState)} {Option("keep-column", KeepColumnIndexes)} {Option("key-column", KeyColumnIndexes)} {Option("percentage-ratio-columns", CompareWithPercentageRatioColumnIndexes)} {Option("unique", IsUniqueBeforeCompare)} {Option("filter-row-with-value", FilterRowWithColumnValues)} {Option("sort-by-column", OrderByResultColumnIndexes)} --file-target-must-exist";
+
+            return commandLine;
+        }
+
+        public string ToFilterCommandLine(string pythonScriptPath, string inputCSV, string outputPath)
+        {
+            string commandLine = $"python {pythonScriptPath} {inputCSV} --output {outputPath} {Option("filter-row-with-value", FilterRowWithColumnValues)} {Option("sort-by-column", OrderByResultColumnIndexes)} --file-target-must-exist";
             return commandLine;
         }
     }
