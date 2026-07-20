@@ -16,6 +16,8 @@ namespace prism.web.service.Controller
         {
         }
 
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Project")]
         public async Task<HttpResponseMessage> Get() {
             using (ManagementDb)
             {
@@ -25,7 +27,8 @@ namespace prism.web.service.Controller
             }
         }
 
-        // GET: api/v{apiVersion}/Project/5
+        [HttpGet]
+        [Route(ServiceHelper.ApiPrefix + "/Project/{id}")]
         public string Get(int id)
         {
             using (ManagementDb)

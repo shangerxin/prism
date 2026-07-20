@@ -22,4 +22,18 @@ public class ConverterTest
         string actualJson = Converter.CsvToJson(csv);
         Assert.AreEqual(expectedJson, actualJson);
     }
+
+    [TestMethod]
+    public void TestFilterRegressionCsv()
+    {
+        string csv = "Name,Age\r\nJohn,30\r\nJane,25\r\n";
+        string expectedFilteredCsv = "Name,Age\r\nJohn,30";
+        string actualFilteredCsv = Converter.FilterRegressionCsv(csv, "John");
+        Assert.AreEqual(expectedFilteredCsv, actualFilteredCsv);
+
+        csv = "Name,Age,CompareResult,Gender\r\nJohn,30,missing,male\r\nJane,25,pass,female\r\n";
+        expectedFilteredCsv = "Name,Age,CompareResult,Gender\r\nJohn,30,missing,male";
+        actualFilteredCsv = Converter.FilterRegressionCsv(csv, ".+,\\s*missing\\s*,");
+        Assert.AreEqual(expectedFilteredCsv, actualFilteredCsv);
+    }
 }

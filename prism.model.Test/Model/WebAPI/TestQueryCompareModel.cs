@@ -1,8 +1,8 @@
 using prism.infra.Enum;
-using prism.infra.WebAPI;
 using System.Text.Json;
+using prism.model.Model.WebAPI;
 
-namespace prism.infra.Test;
+namespace prism.model.Test;
 
 [TestClass]
 public class TestQueryCompareModel

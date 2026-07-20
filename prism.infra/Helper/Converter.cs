@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace prism.infra.Helper
@@ -48,7 +49,7 @@ namespace prism.infra.Helper
             return csvString.ToString();
         }
 
-        public static string CsvToJson(string csv, bool isWriteIndent = false, bool isCamelCase = false)
+        public static string CsvToJson(string csv, int effectiveDigit = 2, bool isWriteIndent = false, bool isCamelCase = false)
         {
             if(string.IsNullOrEmpty(csv))
             {
@@ -71,7 +72,7 @@ namespace prism.infra.Helper
                     foreach (var header in headers)
                     {
                         string rawValue = csvReader.GetField(header);
-                        record[header] = InferAndParseType(rawValue);
+                        record[header] = InferAndParseType(rawValue, effectiveDigit);
                     }
 
                     dynamicRecords.Add(record);
@@ -88,7 +89,23 @@ namespace prism.infra.Helper
             }
         }
 
-        private static object InferAndParseType(string input)
+        public static string FilterRegressionCsv(string csv, string regressionPattern)
+        {
+            if (string.IsNullOrEmpty(csv))
+            {
+                return string.Empty;
+            }
+
+            var headerRow = csv.Split(new[] { Environment.NewLine }, StringSplitOptions.None).FirstOrDefault();
+
+            var contentRows = csv.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+               .Where(line => Regex.IsMatch(line, regressionPattern, RegexOptions.IgnoreCase))
+               .ToList();
+
+            return string.Join(Environment.NewLine, new[] { headerRow }.Concat(contentRows));
+        }
+
+        private static object InferAndParseType(string input, int effectiveDigit = 2)
         {
             if (string.IsNullOrWhiteSpace(input)) return null;
 
@@ -101,7 +118,7 @@ namespace prism.infra.Helper
             // 2. Try Double/Float (Use decimal if financial precision is needed)
             if (double.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out double doubleResult))
             {
-                return doubleResult;
+                return Math.Round(doubleResult, effectiveDigit);
             }
 
             // 3. Try Boolean

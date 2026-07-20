@@ -314,6 +314,7 @@
     <Compile Include="Controller\TestResultController.cs" />
     <Compile Include="Controller\TestJobController.cs" />
     <Compile Include="Controller\TestBuildController.cs" />
+    <Compile Include="Controller\WebUIController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

@@ -261,6 +261,10 @@
     <Compile Include="Model\UserGroup.cs">
       <DependentUpon>PrismTestManagementModels.tt</DependentUpon>
     </Compile>
+    <Compile Include="Model\WebAPI\LoginModel.cs" />
+    <Compile Include="Model\WebAPI\QueryBackupModel.cs" />
+    <Compile Include="Model\WebAPI\QueryCompareModel.cs" />
+    <Compile Include="Model\WebAPI\QueryResultModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\WebAPI\ResultQueryModel.cs" />
     <Compile Include="Script\ResultTypes.cs">

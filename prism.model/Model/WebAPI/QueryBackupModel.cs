@@ -1,11 +1,12 @@
 ﻿using prism.infra.Enum;
+using prism.infra.WebAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace prism.infra.WebAPI
+namespace prism.model.Model.WebAPI
 {
     public class QueryBackupModel: QueryModelBase
     {
